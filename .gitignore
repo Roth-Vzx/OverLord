@@ -1,0 +1,4 @@
+*.exe
+*.dll
+OVERLORD/lib/
+.vscode/
