@@ -1,17 +1,25 @@
 #include <headers/overlord.h>
+#include <headers/exception.h>
 
 OverLord::OverLord()
 {
     gameName = SDL_strdup("OverLord");
     gameState = true;
+
     window = nullptr;
-    screenSurface = nullptr;
-    backGround1 = nullptr;
-    backGround2 = nullptr;
     renderer = nullptr;
     screenHeigth = 768;
     screenWidth = 1024;
+
+    destinationBackground.h = screenHeigth;
+    destinationBackground.w = screenWidth;
+    destinationBackground.y = 0;
+
+    destinationMirrorBackground.h = screenHeigth;
+    destinationMirrorBackground.w = screenWidth;
+    destinationMirrorBackground.y = 0;
 };
+
 OverLord::~OverLord(){};
 
 void OverLord::Run()
@@ -23,110 +31,113 @@ void OverLord::Run()
 
 void OverLord::Init(const char* name, const int& posX, const int& posY, const int& width, const int& height, const uint32_t flags)
 {
-    //SDL_Init(SDL_INIT_EVERYTHING);
-    if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
+    try
     {
-        std::cout<<"SDL could not initialize! SDL_Error: "<<SDL_GetError()<<std::endl;
-    }
-    else
-    {
-        window = SDL_CreateWindow(name, posX, posY, width, height, flags);
-        if( window == NULL )
-        {
-            std::cout<<"Window could not be created! SDL_Error: "<<SDL_GetError()<<std::endl;
-        }
-        else
-        {
-            screenSurface = SDL_GetWindowSurface(window);
-            //SDL_FillRect(screenSurface,NULL,SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF ) );
-            //SDL_UpdateWindowSurface(window);
-            //HACK LINE PARA DEJAR ABIERTO LA VENTANA  //SDL_Event e; bool quit = false; while( quit == false ){ while( SDL_PollEvent( &e ) ){ if( e.type == SDL_QUIT ) quit = true; } }
-            LoadMedia();      
-        }
-    }
-    renderer = SDL_CreateRenderer(window,-1,0);
-    std::cout<<"FINISH INIT"<<std::endl;
-}
+        if(SDL_Init(SDL_INIT_VIDEO)<0) throw SDL_Exception(SDL_GetError());
 
-void OverLord::LoadMedia()
-{
-    /*SDL_Surface* optimized = nullptr;
-    char* pathBackground = SDL_strdup("resources/img/background_layer_1.bmp");
-    optimized = SDL_LoadBMP(pathBackground);
-    if(optimized == nullptr)
-    {
-        std::cout<<"Unable to load image\nPath: "<<pathBackground<<std::endl<<"Error: "<<SDL_GetError()<<std::endl;
-    }
-    else
-    {
-        backGround = SDL_ConvertSurface(optimized,screenSurface->format,0);
-        if(backGround == nullptr)
-        {
-            std::cout<<"Unable to optimize image SDL Error: "<<SDL_GetError()<<std::endl;
-        }
-        else
-        {
-            SDL_Rect stretchRect;
-            stretchRect.x = 0;
-            stretchRect.y = 0;
-            stretchRect.w = screenWidth;
-            stretchRect.h = screenHeigth;
-            SDL_BlitScaled(backGround, NULL, screenSurface, &stretchRect);
-            //SDL_BlitSurface(backGround, NULL, screenSurface, NULL);
-            SDL_UpdateWindowSurface(window);
-            SDL_FreeSurface(optimized);
-        }
-    }*/
+        window = SDL_CreateWindow(name,posX,posY,width,height,flags);
+        if(window == nullptr) throw SDL_Exception(SDL_GetError());
+
+        renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
+        if(renderer == nullptr) throw SDL_Exception(SDL_GetError());
+
+        //HACK LINE PARA DEJAR ABIERTO LA VENTANA  //SDL_Event e; bool quit = false; while( quit == false ){ while( SDL_PollEvent( &e ) ){ if( e.type == SDL_QUIT ) quit = true; } }
+        if(SDL_SetRenderDrawColor(renderer, 200, 200, 200, 200)<0) throw SDL_Exception(SDL_GetError());
+
+        int imgFlags = IMG_INIT_PNG;
+        if(!(IMG_Init(imgFlags)&imgFlags)) throw SDL_Exception(SDL_GetError());
+
+        std::vector<char*> paths;
+        paths.push_back(SDL_strdup("resources/img/background_layer_1.bmp"));
+        paths.push_back(SDL_strdup("resources/img/background_layer_3.bmp"));
+        LoadTextures(paths,mainBackground);      
     
-    char* pathBackground = SDL_strdup("resources/img/background_layer_1.bmp");
-    backGround1 = SDL_LoadBMP(pathBackground);
-    if(backGround1 == nullptr)
-    {
-        std::cout<<"Unable to load image\nPath: "<<pathBackground<<std::endl<<"Error: "<<SDL_GetError()<<std::endl;
+        std::cout<<"FINISH INIT"<<std::endl;
     }
+    catch(const SDL_Exception& exception)
+    {
+        std::cout<<"An Error has ocurred: "<<exception.message<<std::endl;
+        gameState = false;
+        Close();
+    }
+}
+
+SDL_Texture* OverLord::CreateTexture(const char* path)
+{
+    SDL_Texture* temporalTexture;
+
+    temporalTexture = IMG_LoadTexture(renderer,path);
+
+    if(temporalTexture == nullptr) throw SDL_Exception(SDL_GetError()); 
+
+    return temporalTexture;
+}
+
+void OverLord::LoadTextures(const std::vector<char*>& paths, std::vector<SDL_Texture*>& textures)
+{
+    if(paths.size()==0) std::cout<<"Load Textures:\nThere is no Paths"<<std::endl;
     else
     {
-        char* pathBackground2 = SDL_strdup("resources/img/background_layer_3.bmp");
-        backGround2 = SDL_LoadBMP(pathBackground2);
-        if(backGround2 == nullptr)
+        try
         {
-            std::cout<<"Unable to load image\nPath: "<<pathBackground2<<std::endl<<"Error: "<<SDL_GetError()<<std::endl;
+            for(int i=0; i<paths.size(); ++i)
+            {
+                textures.push_back(CreateTexture(paths[i]));         
+            }
         }
-        else
+        catch(const SDL_Exception& exception)
         {
-            SDL_Rect stretchRect;
-            stretchRect.x = 0;
-            stretchRect.y = 0;
-            stretchRect.w = screenWidth;
-            stretchRect.h = screenHeigth;
-            SDL_BlitScaled(backGround1, NULL, screenSurface, &stretchRect);
-            SDL_BlitScaled(backGround2, NULL, screenSurface, &stretchRect);
-            SDL_UpdateWindowSurface(window);
+            std::cout<<"An Error has ocurred: "<<exception.message<<std::endl;
+            gameState = false;
+            Close();
         }
     }
 }
 
-void OverLord::BackgroundLoop(int& x, int& y)
+void OverLord::BackgroundLoop(int& movement)
 {
-    SDL_Rect stretchRect;
-    stretchRect.x = x;
-    stretchRect.y = y;
-    stretchRect.w = screenWidth;
-    stretchRect.h = screenHeigth;
-    SDL_BlitScaled(backGround1, NULL, screenSurface, &stretchRect);
-    SDL_BlitScaled(backGround2, NULL, screenSurface, &stretchRect);
-    SDL_UpdateWindowSurface(window);
+    ++movement;
+
+    destinationBackground.x = movement;
+    destinationMirrorBackground.x = -screenWidth+movement;
+
+    if(movement==screenWidth) movement=0;
+
+    SDL_RenderClear(renderer);
+    
+    for(SDL_Texture* texture : mainBackground)
+    {
+        SDL_RenderCopy(renderer, texture, NULL, &destinationBackground);
+        SDL_RenderCopy(renderer, texture, NULL, &destinationMirrorBackground);
+    }
+
+    SDL_RenderPresent(renderer);
+
+    SDL_Delay(20);
 }
 
 void OverLord::GameLoop()
 {
+    //Firts Frame of Background
+
+    SDL_RenderClear(renderer);
+    
+    for(SDL_Texture* texture : mainBackground)
+    {
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
+    }
+
+    SDL_RenderPresent(renderer);
+    
+    ///////////////////////////
+
     int x = 0;
-    int y = 0;
+
     while(gameState == true)
     {
-        //++x;
         HandleEvents();
-        //BackgroundLoop(x,y);
+
+        BackgroundLoop(x);
     } 
     std::cout<<"BREAK GAMELOOP"<<std::endl;
 }
@@ -134,24 +145,44 @@ void OverLord::GameLoop()
 void OverLord::HandleEvents()
 {
     SDL_Event event;
-    SDL_PollEvent(&event);
-
-    switch (event.type)
+    
+    while(SDL_PollEvent(&event)!=0)
     {
-        case SDL_QUIT:
-            gameState = false;
-            std::cout<<"GAMESTATE FALSE"<<std::endl;
-            Close();
-            break;
+        switch (event.type)
+        {
+            case SDL_QUIT:
+                gameState = false;
+                std::cout<<"GAMESTATE FALSE"<<std::endl;
+                Close();
+                break;
+        }
     }
 }
 
 void OverLord::Close()
 {
-    SDL_FreeSurface(backGround1);
-    SDL_FreeSurface(backGround2);
-    backGround1 = nullptr;
-    backGround2 = nullptr;
-    SDL_DestroyWindow(window);
+    while(!mainBackground.empty())
+    {
+        for(auto iterator = mainBackground.rbegin(); iterator != mainBackground.rend(); ++iterator)
+        {
+            *iterator = nullptr;
+            SDL_DestroyTexture(*iterator);
+            mainBackground.pop_back();
+        }
+    }
+
+    if(renderer != nullptr)
+    {
+        renderer = nullptr;
+        SDL_DestroyRenderer(renderer);
+    }
+
+    if(window != nullptr)
+    {
+        window = nullptr;
+        SDL_DestroyWindow(window);
+    }
+    
+    IMG_Quit();
     SDL_Quit();
 }

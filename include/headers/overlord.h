@@ -2,6 +2,7 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <vector>
 
 class OverLord
 {
@@ -17,14 +18,17 @@ class OverLord
         int screenHeigth;
         SDL_Window* window;
         SDL_Renderer* renderer;
-        SDL_Surface* screenSurface;
-        SDL_Surface* backGround1;
-        SDL_Surface* backGround2;
+        //SDL_Rect rectOriginUser;
+        //SDL_Rect rectSourceUser;
+        SDL_Rect destinationBackground;
+        SDL_Rect destinationMirrorBackground;
+        std::vector<SDL_Texture*> mainBackground;
 
         void Init(const char* name, const int& posX, const int& posY, const int& width, const int& height, const uint32_t flags);
         void GameLoop();
         void HandleEvents();
         void Close();
-        void LoadMedia();
-        void BackgroundLoop(int& x,int& y);
+        SDL_Texture* CreateTexture(const char* path);
+        void LoadTextures(const std::vector<char*>& paths, std::vector<SDL_Texture*>& textures);
+        void BackgroundLoop(int& movement);
 };
