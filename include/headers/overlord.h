@@ -23,8 +23,11 @@ class OverLord
         SDL_Rect destinationBackground;
         SDL_Rect destinationMirrorBackground;
         std::vector<SDL_Texture*> mainBackground;
+        SDL_Texture* background_init;
+    
 
         void Init(const char* name, const int& posX, const int& posY, const int& width, const int& height, const uint32_t flags);
+        void MenuInit();
         void GameLoop();
         void HandleEvents();
         void Close();

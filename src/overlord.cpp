@@ -11,6 +11,7 @@ OverLord::OverLord()
     screenHeigth = 768;
     screenWidth = 1024;
 
+    background_init = nullptr;
     destinationBackground.h = screenHeigth;
     destinationBackground.w = screenWidth;
     destinationBackground.y = 0;
@@ -46,6 +47,8 @@ void OverLord::Init(const char* name, const int& posX, const int& posY, const in
 
         int imgFlags = IMG_INIT_PNG;
         if(!(IMG_Init(imgFlags)&imgFlags)) throw SDL_Exception(SDL_GetError());
+
+        background_init = CreateTexture("resources/img/Init.png");
 
         std::vector<char*> paths;
         paths.push_back(SDL_strdup("resources/img/background_layer_1.bmp"));
@@ -101,7 +104,7 @@ void OverLord::BackgroundLoop(int& movement)
     destinationBackground.x = movement;
     destinationMirrorBackground.x = -screenWidth+movement;
 
-    if(movement==screenWidth) movement=0;
+    if(movement == screenWidth) movement = 0;
 
     SDL_RenderClear(renderer);
     
@@ -115,21 +118,52 @@ void OverLord::BackgroundLoop(int& movement)
 
     SDL_Delay(20);
 }
+void OverLord::MenuInit(){
 
-void OverLord::GameLoop()
-{
     //Firts Frame of Background
 
     SDL_RenderClear(renderer);
-    
-    for(SDL_Texture* texture : mainBackground)
-    {
-        SDL_RenderCopy(renderer, texture, NULL, NULL);
-    }
-
+    SDL_RenderCopy(renderer, background_init, NULL, NULL);
     SDL_RenderPresent(renderer);
-    
+
     ///////////////////////////
+
+    //Second Frame of Background
+
+    SDL_Event event;
+    bool wait = true;
+    while (wait == true)
+    {
+        SDL_PollEvent(&event);
+        switch (event.type)
+        {
+        case SDL_KEYUP:
+        case SDL_MOUSEBUTTONUP:
+            SDL_RenderClear(renderer);
+    
+            for (auto texture : mainBackground)
+            {
+                SDL_RenderCopy(renderer, texture, NULL, NULL);
+            }
+            SDL_RenderPresent(renderer);  
+
+            wait = false;
+            break;
+        
+        case SDL_QUIT:
+            wait = false;
+            gameState = false;
+            std::cout<<"GAMESTATE FALSE"<<std::endl;
+            Close();
+            break;
+        } 
+    }
+    ///////////////////////////
+}
+
+void OverLord::GameLoop()
+{
+    MenuInit();
 
     int x = 0;
 
@@ -146,7 +180,7 @@ void OverLord::HandleEvents()
 {
     SDL_Event event;
     
-    while(SDL_PollEvent(&event)!=0)
+    while(SDL_PollEvent(&event) != 0)
     {
         switch (event.type)
         {
@@ -157,10 +191,17 @@ void OverLord::HandleEvents()
                 break;
         }
     }
+
 }
 
 void OverLord::Close()
 {
+    if(background_init != nullptr)
+    {
+        background_init = nullptr;
+        SDL_DestroyTexture(background_init);
+    }
+
     while(!mainBackground.empty())
     {
         for(auto iterator = mainBackground.rbegin(); iterator != mainBackground.rend(); ++iterator)
