@@ -5,7 +5,7 @@ OverLord::OverLord()
 {
     gameName = SDL_strdup("OverLord");
     gameState = true;
-
+    move = 0;
     window = nullptr;
     renderer = nullptr;
     screenHeigth = 768;
@@ -99,7 +99,6 @@ void OverLord::LoadTextures(const std::vector<char*>& paths, std::vector<SDL_Tex
 
 void OverLord::BackgroundLoop(int& movement)
 {
-    ++movement;
 
     destinationBackground.x = movement;
     destinationMirrorBackground.x = -screenWidth+movement;
@@ -115,8 +114,6 @@ void OverLord::BackgroundLoop(int& movement)
     }
 
     SDL_RenderPresent(renderer);
-
-    SDL_Delay(20);
 }
 void OverLord::MenuInit(){
 
@@ -165,19 +162,21 @@ void OverLord::GameLoop()
 {
     MenuInit();
 
-    int x = 0;
+    move = 0;
 
     while(gameState == true)
     {
         HandleEvents();
+        BackgroundLoop(move);
 
-        BackgroundLoop(x);
+        SDL_Delay(10);
     } 
     std::cout<<"BREAK GAMELOOP"<<std::endl;
 }
 
 void OverLord::HandleEvents()
 {
+    
     SDL_Event event;
     
     while(SDL_PollEvent(&event) != 0)
@@ -189,6 +188,27 @@ void OverLord::HandleEvents()
                 std::cout<<"GAMESTATE FALSE"<<std::endl;
                 Close();
                 break;
+
+            case SDL_KEYDOWN:
+                switch (event.key.keysym.sym)
+                {
+                case SDLK_RIGHT:
+                    move -= 8;
+                    break;
+
+                case SDLK_LEFT:
+                    move += 8;
+                    break;
+
+                case SDLK_UP:
+                    break;
+
+                case SDLK_DOWN:
+                    break;
+                
+                default:
+                    break;
+                }
         }
     }
 
@@ -227,3 +247,4 @@ void OverLord::Close()
     IMG_Quit();
     SDL_Quit();
 }
+

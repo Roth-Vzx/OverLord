@@ -16,6 +16,7 @@ class OverLord
         char* gameName;
         int screenWidth;
         int screenHeigth;
+        int move;
         SDL_Window* window;
         SDL_Renderer* renderer;
         //SDL_Rect rectOriginUser;
@@ -29,6 +30,7 @@ class OverLord
         void Init(const char* name, const int& posX, const int& posY, const int& width, const int& height, const uint32_t flags);
         void MenuInit();
         void GameLoop();
+        void CheckInput();
         void HandleEvents();
         void Close();
         SDL_Texture* CreateTexture(const char* path);
