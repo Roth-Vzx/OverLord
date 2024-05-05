@@ -6,6 +6,7 @@ OverLord::OverLord()
     gameName = SDL_strdup("OverLord");
     gameState = true;
     move = 0;
+    running = -1;
     window = nullptr;
     renderer = nullptr;
     screenHeigth = 768;
@@ -65,6 +66,129 @@ void OverLord::Init(const char* name, const int& posX, const int& posY, const in
     }
 }
 
+void OverLord::GameLoop()
+{
+    MenuInit();
+
+    move = 0;
+
+    while(gameState == true)
+    {
+        HandleEvents();
+        Update();
+        Render();
+
+        SDL_Delay(15);
+    } 
+    std::cout<<"BREAK GAMELOOP"<<std::endl;
+}
+
+void OverLord::HandleEvents()
+{
+    
+    SDL_Event event;
+    
+    while(SDL_PollEvent(&event) != 0)
+    {
+        switch (event.type)
+        {
+            case SDL_QUIT:
+                gameState = false;
+                std::cout<<"GAMESTATE FALSE"<<std::endl;
+                Close();
+            break;
+
+            //Al presionar la tecla
+            case SDL_KEYDOWN:
+                switch (event.key.keysym.sym){
+                    case SDLK_LEFT:
+                        running = 1;
+                        std::cout << running << std::endl;
+                    break;
+
+                    case SDLK_RIGHT:
+                        running = 0;
+                        std::cout << running << std::endl;
+                    break;
+
+                    case SDLK_UP:
+                        jump = true;
+                        std::cout << jump << std::endl;
+                    break;
+                }
+            break;
+
+            //Al soltar la tecla
+            case SDL_KEYUP:
+                switch (event.key.keysym.sym){
+                    case SDLK_LEFT:
+                        running = -1;
+                        std::cout << running << std::endl;
+                    break;
+
+                    case SDLK_RIGHT:
+                        running = -1;
+                        std::cout << running << std::endl;
+                    break;
+
+                    case SDLK_UP:
+                        jump = false;
+                        std::cout << jump << std::endl;
+                    break;
+                }
+            break;
+        }
+    }
+}
+
+void OverLord::Update(){
+    //Movimiento del personaje.
+    if(running == -1) return; //estatico.
+    if(running == 1) move += 8; //izquierda.
+    if(running == 0) move -= 8; //derecha.
+    
+}
+
+
+void OverLord::Render(){
+    BackgroundLoop(move);
+}
+
+void OverLord::Close()
+{
+    if(background_init != nullptr)
+    {
+        background_init = nullptr;
+        SDL_DestroyTexture(background_init);
+    }
+
+    while(!mainBackground.empty())
+    {
+        for(auto iterator = mainBackground.rbegin(); iterator != mainBackground.rend(); ++iterator)
+        {
+            *iterator = nullptr;
+            SDL_DestroyTexture(*iterator);
+            mainBackground.pop_back();
+        }
+    }
+
+    if(renderer != nullptr)
+    {
+        renderer = nullptr;
+        SDL_DestroyRenderer(renderer);
+    }
+
+    if(window != nullptr)
+    {
+        window = nullptr;
+        SDL_DestroyWindow(window);
+    }
+    
+    IMG_Quit();
+    SDL_Quit();
+}
+
+
 SDL_Texture* OverLord::CreateTexture(const char* path)
 {
     SDL_Texture* temporalTexture;
@@ -115,6 +239,9 @@ void OverLord::BackgroundLoop(int& movement)
 
     SDL_RenderPresent(renderer);
 }
+
+
+
 void OverLord::MenuInit(){
 
     //Firts Frame of Background
@@ -155,96 +282,5 @@ void OverLord::MenuInit(){
             break;
         } 
     }
-    ///////////////////////////
-}
-
-void OverLord::GameLoop()
-{
-    MenuInit();
-
-    move = 0;
-
-    while(gameState == true)
-    {
-        HandleEvents();
-        BackgroundLoop(move);
-
-        SDL_Delay(10);
-    } 
-    std::cout<<"BREAK GAMELOOP"<<std::endl;
-}
-
-void OverLord::HandleEvents()
-{
-    
-    SDL_Event event;
-    
-    while(SDL_PollEvent(&event) != 0)
-    {
-        switch (event.type)
-        {
-            case SDL_QUIT:
-                gameState = false;
-                std::cout<<"GAMESTATE FALSE"<<std::endl;
-                Close();
-                break;
-
-            case SDL_KEYDOWN:
-                switch (event.key.keysym.sym)
-                {
-                case SDLK_RIGHT:
-                    move -= 8;
-                    break;
-
-                case SDLK_LEFT:
-                    move += 8;
-                    break;
-
-                case SDLK_UP:
-                    break;
-
-                case SDLK_DOWN:
-                    break;
-                
-                default:
-                    break;
-                }
-        }
-    }
-
-}
-
-void OverLord::Close()
-{
-    if(background_init != nullptr)
-    {
-        background_init = nullptr;
-        SDL_DestroyTexture(background_init);
-    }
-
-    while(!mainBackground.empty())
-    {
-        for(auto iterator = mainBackground.rbegin(); iterator != mainBackground.rend(); ++iterator)
-        {
-            *iterator = nullptr;
-            SDL_DestroyTexture(*iterator);
-            mainBackground.pop_back();
-        }
-    }
-
-    if(renderer != nullptr)
-    {
-        renderer = nullptr;
-        SDL_DestroyRenderer(renderer);
-    }
-
-    if(window != nullptr)
-    {
-        window = nullptr;
-        SDL_DestroyWindow(window);
-    }
-    
-    IMG_Quit();
-    SDL_Quit();
 }
 
