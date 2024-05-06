@@ -16,9 +16,7 @@ class OverLord
         char* gameName;
         int screenWidth;
         int screenHeigth;
-        int move;
-        int running;
-        bool jump;
+        
         SDL_Window* window;
         SDL_Renderer* renderer;
         //SDL_Rect rectOriginUser;
@@ -27,6 +25,18 @@ class OverLord
         SDL_Rect destinationMirrorBackground;
         std::vector<SDL_Texture*> mainBackground;
         SDL_Texture* background_init;
+
+        //Update 
+        int move;
+        int running;
+        bool jump;
+        
+        //Render
+        //Animacion del personaje.
+        int frameIndexPlayer;
+        SDL_Rect sourceWarriorRect;
+        SDL_Rect updateWarriorRect;
+
     
 
         void Init(const char* name, const int& posX, const int& posY, const int& width, const int& height, const uint32_t flags);
@@ -39,4 +49,5 @@ class OverLord
         SDL_Texture* CreateTexture(const char* path);
         void LoadTextures(const std::vector<char*>& paths, std::vector<SDL_Texture*>& textures);
         void BackgroundLoop(int& movement);
+        void DrawPJ();
 };

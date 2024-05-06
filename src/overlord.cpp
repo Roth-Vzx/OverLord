@@ -9,8 +9,8 @@ OverLord::OverLord()
     running = -1;
     window = nullptr;
     renderer = nullptr;
-    screenHeigth = 768;
-    screenWidth = 1024;
+    screenHeigth = 720;
+    screenWidth = 1280;
 
     background_init = nullptr;
     destinationBackground.h = screenHeigth;
@@ -70,15 +70,19 @@ void OverLord::GameLoop()
 {
     MenuInit();
 
-    move = 0;
-
     while(gameState == true)
     {
+        double start = SDL_GetTicks();
         HandleEvents();
         Update();
         Render();
 
-        SDL_Delay(15);
+        const int msPerframe = 16;
+        double end = SDL_GetTicks();
+        auto delay = start + msPerframe - end;
+        if(delay > 0) SDL_Delay(delay);
+        
+
     } 
     std::cout<<"BREAK GAMELOOP"<<std::endl;
 }
@@ -146,12 +150,17 @@ void OverLord::Update(){
     if(running == -1) return; //estatico.
     if(running == 1) move += 8; //izquierda.
     if(running == 0) move -= 8; //derecha.
-    
+
+    //Animaciones. 
+        //Player
+            frameIndexPlayer = int(((SDL_GetTicks() / 100) % 10));
+            sourceWarriorRect.x = (frameIndexPlayer % 6) * 69;
 }
 
-
 void OverLord::Render(){
+    SDL_RenderClear(renderer);
     BackgroundLoop(move);
+    DrawPJ();
 }
 
 void OverLord::Close()
@@ -229,7 +238,6 @@ void OverLord::BackgroundLoop(int& movement)
 
     if(movement == screenWidth) movement = 0;
 
-    SDL_RenderClear(renderer);
     
     for(SDL_Texture* texture : mainBackground)
     {
@@ -237,6 +245,41 @@ void OverLord::BackgroundLoop(int& movement)
         SDL_RenderCopy(renderer, texture, NULL, &destinationMirrorBackground);
     }
 
+    SDL_RenderPresent(renderer);
+}
+
+void OverLord::DrawPJ()
+{
+    SDL_Surface* surfaceTemp = IMG_Load("resources/img/character/warrior.png");
+    SDL_Texture* _texture = SDL_CreateTextureFromSurface(renderer, surfaceTemp);
+
+    if(running == -1){
+        sourceWarriorRect.y = 0;
+        sourceWarriorRect.w = 69;
+        sourceWarriorRect.h = 44;
+    }
+
+    if(running == 0){
+        sourceWarriorRect.y = 44;
+        sourceWarriorRect.w = 69;
+        sourceWarriorRect.h = 44;
+    }
+
+    if(running == 1){
+        sourceWarriorRect.y = 44;
+        sourceWarriorRect.w = 69;
+        sourceWarriorRect.h = 44;
+    }
+
+    updateWarriorRect.x = screenWidth/2 - screenWidth/25;
+    updateWarriorRect.y = screenHeigth/2 + screenHeigth/5;
+    updateWarriorRect.w = 180;
+    updateWarriorRect.h = 190;
+
+    SDL_FreeSurface(surfaceTemp);   
+    //Renderizar
+
+    SDL_RenderCopy(renderer, _texture, &sourceWarriorRect, &updateWarriorRect);
     SDL_RenderPresent(renderer);
 }
 
