@@ -8,11 +8,11 @@ OverLord::OverLord()
     move = 0;
     running = -1;
     window = nullptr;
-    renderer = nullptr;
     screenHeigth = 720;
     screenWidth = 1280;
 
     background_init = nullptr;
+
     destinationBackground.h = screenHeigth;
     destinationBackground.w = screenWidth;
     destinationBackground.y = 0;
@@ -20,6 +20,16 @@ OverLord::OverLord()
     destinationMirrorBackground.h = screenHeigth;
     destinationMirrorBackground.w = screenWidth;
     destinationMirrorBackground.y = 0;
+
+    updateWarriorRect.x = screenWidth/2 - screenWidth/25;
+    updateWarriorRect.y = screenHeigth/2 + screenHeigth/5;
+    updateWarriorRect.w = 180;
+    updateWarriorRect.h = 190;
+
+    sourceWarriorRect.x = 0;
+    sourceWarriorRect.y = 0;
+    sourceWarriorRect.w = 69;
+    sourceWarriorRect.h = 44;
 };
 
 OverLord::~OverLord(){};
@@ -40,21 +50,22 @@ void OverLord::Init(const char* name, const int& posX, const int& posY, const in
         window = SDL_CreateWindow(name,posX,posY,width,height,flags);
         if(window == nullptr) throw SDL_Exception(SDL_GetError());
 
-        renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
-        if(renderer == nullptr) throw SDL_Exception(SDL_GetError());
+        media.SetRenderer(SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED));
+        if(media.GetRenderer() == nullptr) throw SDL_Exception(SDL_GetError());
 
         //HACK LINE PARA DEJAR ABIERTO LA VENTANA  //SDL_Event e; bool quit = false; while( quit == false ){ while( SDL_PollEvent( &e ) ){ if( e.type == SDL_QUIT ) quit = true; } }
-        if(SDL_SetRenderDrawColor(renderer, 200, 200, 200, 200)<0) throw SDL_Exception(SDL_GetError());
+        if(SDL_SetRenderDrawColor(media.GetRenderer(), 200, 200, 200, 200)<0) throw SDL_Exception(SDL_GetError());
 
         int imgFlags = IMG_INIT_PNG;
         if(!(IMG_Init(imgFlags)&imgFlags)) throw SDL_Exception(SDL_GetError());
 
-        background_init = CreateTexture("resources/img/Init.png");
+        background_init = media.CreateTexture("resources/img/Init.png");
+        PJ = media.CreateTexture("resources/img/character/warrior.png");
 
         std::vector<char*> paths;
         paths.push_back(SDL_strdup("resources/img/background_layer_1.bmp"));
         paths.push_back(SDL_strdup("resources/img/background_layer_3.bmp"));
-        LoadTextures(paths,mainBackground);      
+        media.LoadTextures(paths,mainBackground);      
     
         std::cout<<"FINISH INIT"<<std::endl;
     }
@@ -70,10 +81,11 @@ void OverLord::GameLoop()
 {
     MenuInit();
 
-    while(gameState == true)
+    while(true)
     {
         double start = SDL_GetTicks();
-        HandleEvents();
+
+        HandleEvents(); if(gameState==false) break;
         Update();
         Render();
 
@@ -81,15 +93,13 @@ void OverLord::GameLoop()
         double end = SDL_GetTicks();
         auto delay = start + msPerframe - end;
         if(delay > 0) SDL_Delay(delay);
-        
-
     } 
+    
     std::cout<<"BREAK GAMELOOP"<<std::endl;
 }
 
 void OverLord::HandleEvents()
 {
-    
     SDL_Event event;
     
     while(SDL_PollEvent(&event) != 0)
@@ -98,7 +108,6 @@ void OverLord::HandleEvents()
         {
             case SDL_QUIT:
                 gameState = false;
-                std::cout<<"GAMESTATE FALSE"<<std::endl;
                 Close();
             break;
 
@@ -158,140 +167,40 @@ void OverLord::Update(){
 }
 
 void OverLord::Render(){
-    SDL_RenderClear(renderer);
-    BackgroundLoop(move);
-    DrawPJ();
+    SDL_RenderClear(media.GetRenderer());
+    BackgroundLoop();
+    media.DrawPJ(PJ,sourceWarriorRect,updateWarriorRect,running);
+    SDL_RenderPresent(media.GetRenderer());
 }
 
-void OverLord::Close()
+void OverLord::BackgroundLoop()
 {
-    if(background_init != nullptr)
+    destinationBackground.x = move;
+
+    if(move<0) //PJ hacia la derecha
     {
-        background_init = nullptr;
-        SDL_DestroyTexture(background_init);
+        destinationMirrorBackground.x = screenWidth+move;
+    }
+    else if(move>0) //PJ hacia la izquierda
+    {
+        destinationMirrorBackground.x = -screenWidth+move;
     }
 
-    while(!mainBackground.empty())
-    {
-        for(auto iterator = mainBackground.rbegin(); iterator != mainBackground.rend(); ++iterator)
-        {
-            *iterator = nullptr;
-            SDL_DestroyTexture(*iterator);
-            mainBackground.pop_back();
-        }
-    }
+    if(move >= screenWidth || move <= -screenWidth) move = 0;
 
-    if(renderer != nullptr)
-    {
-        renderer = nullptr;
-        SDL_DestroyRenderer(renderer);
-    }
-
-    if(window != nullptr)
-    {
-        window = nullptr;
-        SDL_DestroyWindow(window);
-    }
-    
-    IMG_Quit();
-    SDL_Quit();
-}
-
-
-SDL_Texture* OverLord::CreateTexture(const char* path)
-{
-    SDL_Texture* temporalTexture;
-
-    temporalTexture = IMG_LoadTexture(renderer,path);
-
-    if(temporalTexture == nullptr) throw SDL_Exception(SDL_GetError()); 
-
-    return temporalTexture;
-}
-
-void OverLord::LoadTextures(const std::vector<char*>& paths, std::vector<SDL_Texture*>& textures)
-{
-    if(paths.size()==0) std::cout<<"Load Textures:\nThere is no Paths"<<std::endl;
-    else
-    {
-        try
-        {
-            for(int i=0; i<paths.size(); ++i)
-            {
-                textures.push_back(CreateTexture(paths[i]));         
-            }
-        }
-        catch(const SDL_Exception& exception)
-        {
-            std::cout<<"An Error has ocurred: "<<exception.message<<std::endl;
-            gameState = false;
-            Close();
-        }
-    }
-}
-
-void OverLord::BackgroundLoop(int& movement)
-{
-
-    destinationBackground.x = movement;
-    destinationMirrorBackground.x = -screenWidth+movement;
-
-    if(movement == screenWidth) movement = 0;
-
-    
     for(SDL_Texture* texture : mainBackground)
     {
-        SDL_RenderCopy(renderer, texture, NULL, &destinationBackground);
-        SDL_RenderCopy(renderer, texture, NULL, &destinationMirrorBackground);
+        SDL_RenderCopy(media.GetRenderer(), texture, NULL, &destinationBackground);
+        SDL_RenderCopy(media.GetRenderer(), texture, NULL, &destinationMirrorBackground);
     }
-
-    SDL_RenderPresent(renderer);
 }
-
-void OverLord::DrawPJ()
-{
-    SDL_Surface* surfaceTemp = IMG_Load("resources/img/character/warrior.png");
-    SDL_Texture* _texture = SDL_CreateTextureFromSurface(renderer, surfaceTemp);
-
-    if(running == -1){
-        sourceWarriorRect.y = 0;
-        sourceWarriorRect.w = 69;
-        sourceWarriorRect.h = 44;
-    }
-
-    if(running == 0){
-        sourceWarriorRect.y = 44;
-        sourceWarriorRect.w = 69;
-        sourceWarriorRect.h = 44;
-    }
-
-    if(running == 1){
-        sourceWarriorRect.y = 44;
-        sourceWarriorRect.w = 69;
-        sourceWarriorRect.h = 44;
-    }
-
-    updateWarriorRect.x = screenWidth/2 - screenWidth/25;
-    updateWarriorRect.y = screenHeigth/2 + screenHeigth/5;
-    updateWarriorRect.w = 180;
-    updateWarriorRect.h = 190;
-
-    SDL_FreeSurface(surfaceTemp);   
-    //Renderizar
-
-    SDL_RenderCopy(renderer, _texture, &sourceWarriorRect, &updateWarriorRect);
-    SDL_RenderPresent(renderer);
-}
-
-
 
 void OverLord::MenuInit(){
 
     //Firts Frame of Background
 
-    SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, background_init, NULL, NULL);
-    SDL_RenderPresent(renderer);
+    SDL_RenderCopy(media.GetRenderer(), background_init, NULL, NULL);
+    SDL_RenderPresent(media.GetRenderer());
 
     ///////////////////////////
 
@@ -304,26 +213,72 @@ void OverLord::MenuInit(){
         SDL_PollEvent(&event);
         switch (event.type)
         {
-        case SDL_KEYUP:
-        case SDL_MOUSEBUTTONUP:
-            SDL_RenderClear(renderer);
-    
-            for (auto texture : mainBackground)
-            {
-                SDL_RenderCopy(renderer, texture, NULL, NULL);
-            }
-            SDL_RenderPresent(renderer);  
+            case SDL_KEYUP:
+            case SDL_MOUSEBUTTONUP:
 
-            wait = false;
-            break;
+                SDL_RenderClear(media.GetRenderer());
+                media.CopyFullTextures(mainBackground);
+                SDL_RenderPresent(media.GetRenderer());  
+
+                wait = false;
+                break;
         
-        case SDL_QUIT:
-            wait = false;
-            gameState = false;
-            std::cout<<"GAMESTATE FALSE"<<std::endl;
-            Close();
-            break;
+            case SDL_QUIT:
+                wait = false;
+                gameState = false;
+                Close();
+                break;
         } 
     }
+    ///////////////////////////
+}
+
+void OverLord::Close()
+{
+    std::cout<<"GameState=False\nCall:Close()\n";
+
+    if(PJ != nullptr)
+    {
+        PJ = nullptr;
+        SDL_DestroyTexture(PJ);
+        std::cout<<"Destroy PJ"<<std::endl;
+    }
+
+    if(background_init != nullptr)
+    {
+        background_init = nullptr;
+        SDL_DestroyTexture(background_init);
+        std::cout<<"Destroy Init Background"<<std::endl;
+    }
+
+    while(!mainBackground.empty())
+    {
+        for(auto iterator = mainBackground.rbegin(); iterator != mainBackground.rend(); ++iterator)
+        {
+            *iterator = nullptr;
+            SDL_DestroyTexture(*iterator);
+            mainBackground.pop_back();
+        }
+        std::cout<<"Destroy Main Background"<<std::endl;
+    }
+
+    if(media.GetRenderer() != nullptr)
+    {
+        media.SetRenderer(nullptr);
+        SDL_DestroyRenderer(media.GetRenderer());
+        std::cout<<"Destroy Renderer"<<std::endl;
+    }
+
+    if(window != nullptr)
+    {
+        window = nullptr;
+        SDL_DestroyWindow(window);
+        std::cout<<"Destroy Window"<<std::endl;
+    }
+    
+    IMG_Quit();
+    std::cout<<"IMG Quit"<<std::endl;
+    SDL_Quit();
+    std::cout<<"SDL Quit"<<std::endl;
 }
 
