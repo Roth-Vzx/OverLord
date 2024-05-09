@@ -6,7 +6,8 @@ OverLord::OverLord()
     gameName = SDL_strdup("OverLord");
     gameState = true;
     move = 0;
-    running = -1;
+    state = -1;
+    isRight = true;
     window = nullptr;
     screenHeigth = 720;
     screenWidth = 1280;
@@ -115,18 +116,20 @@ void OverLord::HandleEvents()
             case SDL_KEYDOWN:
                 switch (event.key.keysym.sym){
                     case SDLK_LEFT:
-                        running = 1;
-                        std::cout << running << std::endl;
+                        state = 1; //running
+                        isRight = false;
+                        std::cout << state << std::endl;
                     break;
 
                     case SDLK_RIGHT:
-                        running = 0;
-                        std::cout << running << std::endl;
+                        state = 1; //running
+                        isRight = true; 
+                        std::cout << state << std::endl;
                     break;
 
                     case SDLK_UP:
-                        jump = true;
-                        std::cout << jump << std::endl;
+                        jump = true; // jump
+                        std::cout << state << std::endl;
                     break;
                 }
             break;
@@ -135,18 +138,19 @@ void OverLord::HandleEvents()
             case SDL_KEYUP:
                 switch (event.key.keysym.sym){
                     case SDLK_LEFT:
-                        running = -1;
-                        std::cout << running << std::endl;
+                        state = -1;
+                        std::cout << state << std::endl;
                     break;
 
                     case SDLK_RIGHT:
-                        running = -1;
-                        std::cout << running << std::endl;
+                        state = -1;
+                        std::cout << state << std::endl;
                     break;
 
                     case SDLK_UP:
                         jump = false;
-                        std::cout << jump << std::endl;
+
+                        std::cout << state << std::endl;
                     break;
                 }
             break;
@@ -156,9 +160,9 @@ void OverLord::HandleEvents()
 
 void OverLord::Update(){
     //Movimiento del personaje.
-    if(running == -1) return; //estatico.
-    if(running == 1) move += 8; //izquierda.
-    if(running == 0) move -= 8; //derecha.
+    if(state == -1 || jump == true && state == -1) return; //estatico.
+        if(isRight == false) move += 8; //izquierda.
+        else move -= 8; //derecha.
 
     //Animaciones. 
         //Player
@@ -169,7 +173,7 @@ void OverLord::Update(){
 void OverLord::Render(){
     SDL_RenderClear(media.GetRenderer());
     BackgroundLoop();
-    media.DrawPJ(PJ,sourceWarriorRect,updateWarriorRect,running);
+    media.DrawPJ(PJ,sourceWarriorRect,updateWarriorRect,state,isRight, jump);
     SDL_RenderPresent(media.GetRenderer());
 }
 

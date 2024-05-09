@@ -16,7 +16,7 @@ class MediaFiles
         SDL_Texture* CreateTexture(const char* path);
         void LoadTextures(const std::vector<char*>& paths, std::vector<SDL_Texture*>& textures);
         void CopyFullTextures(std::vector<SDL_Texture*> textures);
-        void DrawPJ(SDL_Texture* PJtexture, SDL_Rect& source, SDL_Rect& destiny, const int& state);
+        void DrawPJ(SDL_Texture* PJtexture, SDL_Rect& source, SDL_Rect& destiny, const int& state,const bool& isLeft, const bool& jump);
 
     private:
         SDL_Renderer* renderer;   

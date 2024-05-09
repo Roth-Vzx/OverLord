@@ -43,30 +43,18 @@ void MediaFiles::CopyFullTextures(std::vector<SDL_Texture*> textures)
     }
 }
 
-void MediaFiles::DrawPJ(SDL_Texture* PJtexture, SDL_Rect& source, SDL_Rect& destiny, const int& state)
+void MediaFiles::DrawPJ(SDL_Texture* PJtexture, SDL_Rect& source, SDL_Rect& destiny, const int& state, const bool& isRight, const bool& jump)
 {
-    if(state == -1) //static
-    {
-        source.y = 0;
-        source.w = 69;
-        source.h = 44;
-    }
+    if(state == -1) source.y = 0;//static
+    if(state == 1)source.y = 44; //running
+    if(jump == true) source.y = 308; //jump
+    
+    source.w = 69;
+    source.h = 44;
 
-    if(state == 0) //rigth
-    {
-        source.y = 44;
-        source.w = 69;
-        source.h = 44;
-    }
-
-    if(state == 1) //left
-    {
-        source.y = 44;
-        source.w = 69;
-        source.h = 44;
-    }
-
-    SDL_RenderCopy(renderer, PJtexture, &source, &destiny);
+    //Direccion.
+    if (isRight == true) SDL_RenderCopyEx(renderer, PJtexture, &source, &destiny, 0, NULL, SDL_FLIP_NONE);
+    else SDL_RenderCopyEx(renderer, PJtexture, &source, &destiny, 0, NULL,SDL_FLIP_HORIZONTAL);
     
     SDL_RenderPresent(renderer);
 }

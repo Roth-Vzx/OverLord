@@ -31,7 +31,8 @@ class OverLord
 
         //Update 
         int move;
-        int running;
+        int state;
+        bool isRight;
         bool jump;
         
         //Render
