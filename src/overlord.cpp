@@ -5,8 +5,10 @@ OverLord::OverLord()
 {
     gameName = SDL_strdup("OverLord");
     gameState = true;
+    frameIndexPlayer = 0;
     move = 0;
     state = -1;
+    jump = false;
     isRight = true;
     window = nullptr;
     screenHeigth = 720;
@@ -31,6 +33,8 @@ OverLord::OverLord()
     sourceWarriorRect.y = 0;
     sourceWarriorRect.w = 69;
     sourceWarriorRect.h = 44;
+
+    media.SetLimitY(updateWarriorRect.y);
 };
 
 OverLord::~OverLord(){};
@@ -54,7 +58,6 @@ void OverLord::Init(const char* name, const int& posX, const int& posY, const in
         media.SetRenderer(SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED));
         if(media.GetRenderer() == nullptr) throw SDL_Exception(SDL_GetError());
 
-        //HACK LINE PARA DEJAR ABIERTO LA VENTANA  //SDL_Event e; bool quit = false; while( quit == false ){ while( SDL_PollEvent( &e ) ){ if( e.type == SDL_QUIT ) quit = true; } }
         if(SDL_SetRenderDrawColor(media.GetRenderer(), 200, 200, 200, 200)<0) throw SDL_Exception(SDL_GetError());
 
         int imgFlags = IMG_INIT_PNG;
@@ -66,8 +69,8 @@ void OverLord::Init(const char* name, const int& posX, const int& posY, const in
         std::vector<char*> paths;
         paths.push_back(SDL_strdup("resources/img/background_layer_1.bmp"));
         paths.push_back(SDL_strdup("resources/img/background_layer_3.bmp"));
-        media.LoadTextures(paths,mainBackground);      
-    
+        media.LoadTextures(paths,mainBackground);
+
         std::cout<<"FINISH INIT"<<std::endl;
     }
     catch(const SDL_Exception& exception)
@@ -81,11 +84,9 @@ void OverLord::Init(const char* name, const int& posX, const int& posY, const in
 void OverLord::GameLoop()
 {
     MenuInit();
-
     while(true)
     {
         double start = SDL_GetTicks();
-
         HandleEvents(); if(gameState==false) break;
         Update();
         Render();
@@ -102,7 +103,6 @@ void OverLord::GameLoop()
 void OverLord::HandleEvents()
 {
     SDL_Event event;
-    
     while(SDL_PollEvent(&event) != 0)
     {
         switch (event.type)
@@ -110,6 +110,7 @@ void OverLord::HandleEvents()
             case SDL_QUIT:
                 gameState = false;
                 Close();
+                return;
             break;
 
             //Al presionar la tecla
@@ -128,8 +129,14 @@ void OverLord::HandleEvents()
                     break;
 
                     case SDLK_UP:
-                        jump = true; // jump
-                        std::cout << state << std::endl;
+                        if(updateWarriorRect.y == media.GetLimitY()) 
+                        {
+                            //Si salta, este evento no se volvera a leer hasta que:
+                            //1) La persona deje de presionar el boton
+                            //2) el personaje alcance su altura maxima de salto y vuelva a bajar
+                            jump = true; // jump
+                            std::cout << "Jump TRUE" << std::endl;
+                        } 
                     break;
                 }
             break;
@@ -149,8 +156,7 @@ void OverLord::HandleEvents()
 
                     case SDLK_UP:
                         jump = false;
-
-                        std::cout << state << std::endl;
+                        std::cout << "Jump FALSE" << std::endl;
                     break;
                 }
             break;
@@ -160,10 +166,10 @@ void OverLord::HandleEvents()
 
 void OverLord::Update(){
     //Movimiento del personaje.
-    if(state == -1 || jump == true && state == -1) return; //estatico.
-        if(isRight == false) move += 8; //izquierda.
-        else move -= 8; //derecha.
-
+        if(state == -1) return; //estatico.
+        else if(isRight == false) move += 8; //izquierda.
+        else if(isRight == true) move -= 8; //derecha.
+        
     //Animaciones. 
         //Player
             frameIndexPlayer = int(((SDL_GetTicks() / 100) % 10));
@@ -173,7 +179,7 @@ void OverLord::Update(){
 void OverLord::Render(){
     SDL_RenderClear(media.GetRenderer());
     BackgroundLoop();
-    media.DrawPJ(PJ,sourceWarriorRect,updateWarriorRect,state,isRight, jump);
+    media.DrawPJ(PJ,sourceWarriorRect,updateWarriorRect,state,isRight,jump);
     SDL_RenderPresent(media.GetRenderer());
 }
 

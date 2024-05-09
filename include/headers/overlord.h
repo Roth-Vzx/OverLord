@@ -8,16 +8,19 @@
 class OverLord
 {
     public:
+        //Constructor y Destructor
         OverLord();
         ~OverLord();
+
+        //Funciones Publicas
         void Run();
 
     private:
+        //Atributos
         bool gameState;
         char* gameName;
         int screenWidth;
         int screenHeigth;
-        
         SDL_Window* window;
         MediaFiles media;
 
@@ -42,7 +45,7 @@ class OverLord
         SDL_Rect sourceWarriorRect;
         SDL_Rect updateWarriorRect;
 
-    
+        //Funciones Privadas
         void Init(const char* name, const int& posX, const int& posY, const int& width, const int& height, const uint32_t flags);
         void MenuInit();
         void GameLoop();

@@ -4,6 +4,8 @@
 MediaFiles::MediaFiles()
 {
     renderer = nullptr;
+    LimitY = 0;
+    screenWidth = 0;
 };
 
 MediaFiles::~MediaFiles(){};
@@ -11,6 +13,12 @@ MediaFiles::~MediaFiles(){};
 SDL_Renderer* MediaFiles::GetRenderer(){return renderer;}
 
 void MediaFiles::SetRenderer(SDL_Renderer* value){renderer = value;}
+
+void MediaFiles::SetLimitY(int value){LimitY = value;}
+
+int MediaFiles::GetLimitY(){return LimitY;}
+
+void MediaFiles::SetScreenWidth(int value){screenWidth = value;}
 
 SDL_Texture* MediaFiles::CreateTexture(const char* path)
 {
@@ -43,18 +51,38 @@ void MediaFiles::CopyFullTextures(std::vector<SDL_Texture*> textures)
     }
 }
 
-void MediaFiles::DrawPJ(SDL_Texture* PJtexture, SDL_Rect& source, SDL_Rect& destiny, const int& state, const bool& isRight, const bool& jump)
+void MediaFiles::DrawPJ(SDL_Texture* PJtexture, SDL_Rect& source, SDL_Rect& destiny, const int& state, const bool& isRight, bool& jump)
 {
-    if(state == -1) source.y = 0;//static
-    if(state == 1)source.y = 44; //running
-    if(jump == true) source.y = 308; //jump
-    
-    source.w = 69;
-    source.h = 44;
+    if(jump == true)
+    {
+        //Si salta comenzara a subir hasta un cierto limite (LimitY/2)
+        //Cuando llegue a ese limite, jump sera falso
+
+        source.y = 308; //jump
+
+        if(destiny.y >= LimitY/2) destiny.y = destiny.y - 6;
+        else jump = false;
+    }
+    else
+    {
+        if(destiny.y < LimitY && jump == false)
+        {
+            //Si el personaje acaba de saltar
+            //Con este if se asegura que vuelva a bajar
+
+            source.y = 308; //jump
+            destiny.y = destiny.y + 6;
+        } 
+        else if(state == -1) source.y = 0; //static
+        else if(state == 1) source.y = 44; //running
+    }
+     
+    //source.w = 69;
+    //source.h = 44;
 
     //Direccion.
     if (isRight == true) SDL_RenderCopyEx(renderer, PJtexture, &source, &destiny, 0, NULL, SDL_FLIP_NONE);
     else SDL_RenderCopyEx(renderer, PJtexture, &source, &destiny, 0, NULL,SDL_FLIP_HORIZONTAL);
     
-    SDL_RenderPresent(renderer);
+    //SDL_RenderPresent(renderer);
 }
