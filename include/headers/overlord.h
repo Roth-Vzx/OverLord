@@ -35,8 +35,9 @@ class OverLord
         //Update 
         int move;
         int state;
-        bool isRight;
-        bool jump;
+        bool IsRight;
+        bool IsJumping;
+        bool IsFixed;
         
         //Render
         //Animacion del personaje.

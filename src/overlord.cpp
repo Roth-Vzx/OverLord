@@ -8,8 +8,9 @@ OverLord::OverLord()
     frameIndexPlayer = 0;
     move = 0;
     state = -1;
-    jump = false;
-    isRight = true;
+    IsJumping = false;
+    IsRight = true;
+    IsFixed = false;
     window = nullptr;
     screenHeigth = 720;
     screenWidth = 1280;
@@ -27,7 +28,7 @@ OverLord::OverLord()
     updateWarriorRect.x = screenWidth/2 - screenWidth/25;
     updateWarriorRect.y = screenHeigth/2 + screenHeigth/5;
     updateWarriorRect.w = 180;
-    updateWarriorRect.h = 190;
+    updateWarriorRect.h = 180;
 
     sourceWarriorRect.x = 0;
     sourceWarriorRect.y = 0;
@@ -87,6 +88,7 @@ void OverLord::GameLoop()
     while(true)
     {
         double start = SDL_GetTicks();
+
         HandleEvents(); if(gameState==false) break;
         Update();
         Render();
@@ -115,50 +117,56 @@ void OverLord::HandleEvents()
 
             //Al presionar la tecla
             case SDL_KEYDOWN:
+            if(IsFixed == false)
+            {
                 switch (event.key.keysym.sym){
                     case SDLK_LEFT:
                         state = 1; //running
-                        isRight = false;
+                        IsRight = false;
                         std::cout << state << std::endl;
                     break;
 
                     case SDLK_RIGHT:
                         state = 1; //running
-                        isRight = true; 
+                        IsRight = true; 
                         std::cout << state << std::endl;
                     break;
 
                     case SDLK_UP:
-                        if(updateWarriorRect.y == media.GetLimitY()) 
+                        if(updateWarriorRect.y == media.GetLimitY()) //LimitY = Piso
                         {
                             //Si salta, este evento no se volvera a leer hasta que:
                             //1) La persona deje de presionar el boton
                             //2) el personaje alcance su altura maxima de salto y vuelva a bajar
-                            jump = true; // jump
+                            IsJumping = true; // jump
                             std::cout << "Jump TRUE" << std::endl;
                         } 
                     break;
+
+                    case SDLK_SPACE:
+                        state = 2;
+                        IsFixed = true; //swing
                 }
+            }
             break;
 
             //Al soltar la tecla
             case SDL_KEYUP:
+            if(IsFixed == false)
+            {
                 switch (event.key.keysym.sym){
                     case SDLK_LEFT:
-                        state = -1;
-                        std::cout << state << std::endl;
-                    break;
-
                     case SDLK_RIGHT:
                         state = -1;
                         std::cout << state << std::endl;
                     break;
 
                     case SDLK_UP:
-                        jump = false;
+                        IsJumping = false;
                         std::cout << "Jump FALSE" << std::endl;
                     break;
                 }
+            }
             break;
         }
     }
@@ -166,20 +174,40 @@ void OverLord::HandleEvents()
 
 void OverLord::Update(){
     //Movimiento del personaje.
-        if(state == -1) return; //estatico.
-        else if(isRight == false) move += 8; //izquierda.
-        else if(isRight == true) move -= 8; //derecha.
+
+        if(state == -1); //estatico.
+        else if(IsRight == false)
+        {
+            //izquierda.
+            if(IsJumping == true) move += 8;
+            else
+            {
+                if(state == 2) move += 5;
+                else move += 8;
+            }
+        } 
+        else if(IsRight == true)
+        {
+            //derecha.
+            if(IsJumping == true) move -= 8;
+            else
+            {
+                if(state == 2) move -= 5;
+                else move -= 8;
+            }
+        } 
         
     //Animaciones. 
         //Player
-            frameIndexPlayer = int(((SDL_GetTicks() / 100) % 10));
-            sourceWarriorRect.x = (frameIndexPlayer % 6) * 69;
+        
+        frameIndexPlayer = int(((SDL_GetTicks() / 100) % 12));
+        sourceWarriorRect.x = (frameIndexPlayer % 6) * 69;        
 }
 
 void OverLord::Render(){
     SDL_RenderClear(media.GetRenderer());
     BackgroundLoop();
-    media.DrawPJ(PJ,sourceWarriorRect,updateWarriorRect,state,isRight,jump);
+    media.DrawPJ(PJ,sourceWarriorRect,updateWarriorRect,state,IsRight,IsJumping,IsFixed);
     SDL_RenderPresent(media.GetRenderer());
 }
 
