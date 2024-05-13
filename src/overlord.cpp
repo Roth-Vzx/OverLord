@@ -1,6 +1,9 @@
 #include <headers/overlord.h>
 #include <headers/exception.h>
 
+SDL_Renderer* OverLord::renderer = nullptr;
+Map* map;
+
 OverLord::OverLord()
 {
     gameName = SDL_strdup("OverLord");
@@ -34,6 +37,8 @@ OverLord::OverLord()
     sourceWarriorRect.y = 0;
     sourceWarriorRect.w = 69;
     sourceWarriorRect.h = 44;
+
+   // map = new Map();
 
     media.SetLimitY(updateWarriorRect.y);
 };
@@ -80,6 +85,8 @@ void OverLord::Init(const char* name, const int& posX, const int& posY, const in
         gameState = false;
         Close();
     }
+
+   
 }
 
 void OverLord::GameLoop()
@@ -207,6 +214,7 @@ void OverLord::Update(){
 void OverLord::Render(){
     SDL_RenderClear(media.GetRenderer());
     BackgroundLoop();
+    //map->Draw();
     media.DrawPJ(PJ,sourceWarriorRect,updateWarriorRect,state,IsRight,IsJumping,IsFixed);
     SDL_RenderPresent(media.GetRenderer());
 }
@@ -274,6 +282,8 @@ void OverLord::MenuInit(){
 void OverLord::Close()
 {
     std::cout<<"GameState=False\nCall:Close()\n";
+
+    //map->~Map();
 
     if(PJ != nullptr)
     {

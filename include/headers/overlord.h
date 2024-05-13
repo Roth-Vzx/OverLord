@@ -3,7 +3,9 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <headers/mediaFiles.h>
+#include <headers/map.h>
 #include <vector>
+
 
 class OverLord
 {
@@ -15,6 +17,8 @@ class OverLord
         //Funciones Publicas
         void Run();
 
+        static SDL_Renderer* renderer; //renderizador
+        
     private:
         //Atributos
         bool gameState;
@@ -23,7 +27,7 @@ class OverLord
         int screenHeigth;
         SDL_Window* window;
         MediaFiles media;
-
+        
         //Fondo In Game
         SDL_Rect destinationBackground;
         SDL_Rect destinationMirrorBackground;

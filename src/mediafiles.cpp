@@ -1,9 +1,10 @@
 #include <headers/mediaFiles.h>
 #include <headers/exception.h>
+#include <headers/overlord.h>
 
 MediaFiles::MediaFiles()
 {
-    renderer = nullptr;
+   
     LimitY = 0;
     screenWidth = 0;
     lastFrames.second = false;
@@ -11,9 +12,9 @@ MediaFiles::MediaFiles()
 
 MediaFiles::~MediaFiles(){};
 
-SDL_Renderer* MediaFiles::GetRenderer(){return renderer;}
+SDL_Renderer* MediaFiles::GetRenderer(){return OverLord::renderer;}
 
-void MediaFiles::SetRenderer(SDL_Renderer* value){renderer = value;}
+void MediaFiles::SetRenderer(SDL_Renderer* value){OverLord::renderer = value;}
 
 void MediaFiles::SetLimitY(int value){LimitY = value;}
 
@@ -25,7 +26,7 @@ SDL_Texture* MediaFiles::CreateTexture(const char* path)
 {
     SDL_Texture* temporalTexture;
 
-    temporalTexture = IMG_LoadTexture(renderer,path);
+    temporalTexture = IMG_LoadTexture(OverLord::renderer,path);
 
     if(temporalTexture == nullptr) throw SDL_Exception(SDL_GetError()); 
 
@@ -48,7 +49,7 @@ void MediaFiles::CopyFullTextures(std::vector<SDL_Texture*> textures)
 {
     for(SDL_Texture* texture : textures)
     {
-        SDL_RenderCopy(renderer, texture, NULL, NULL);
+        SDL_RenderCopy(OverLord::renderer, texture, NULL, NULL);
     }
 }
 
@@ -91,8 +92,8 @@ void MediaFiles::DrawPJ(SDL_Texture* PJtexture, SDL_Rect& source, SDL_Rect& dest
     }
      
     //Direccion.
-    if (IsRight == true) SDL_RenderCopyEx(renderer, PJtexture, &source, &destiny, 0, NULL, SDL_FLIP_NONE);
-    else SDL_RenderCopyEx(renderer, PJtexture, &source, &destiny, 0, NULL,SDL_FLIP_HORIZONTAL);
+    if (IsRight == true) SDL_RenderCopyEx(OverLord::renderer, PJtexture, &source, &destiny, 0, NULL, SDL_FLIP_NONE);
+    else SDL_RenderCopyEx(OverLord::renderer, PJtexture, &source, &destiny, 0, NULL,SDL_FLIP_HORIZONTAL);
     
     //SDL_RenderPresent(renderer);
 }
@@ -129,4 +130,8 @@ void MediaFiles::DoFixedAnimation(const int& start, const int& numFrames, const 
             lastFrames.first.pop();
         } 
     }
+}
+
+void DrawMap(SDL_Texture* tex, SDL_Rect src, SDL_Rect dest){
+    SDL_RenderCopy(OverLord::renderer, tex, &src, &dest);
 }
