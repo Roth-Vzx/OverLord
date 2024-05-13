@@ -81,7 +81,12 @@ void MediaFiles::DrawPJ(SDL_Texture* PJtexture, SDL_Rect& source, SDL_Rect& dest
             {
                 case 2:
                     source.y = source.h * 2;
-                    DoFixedAnimation(3,9,6,2,source,IsFixed);
+                    DoFixedAnimation(3,9,6,3,source,IsFixed);
+                break;
+
+                case 3:
+                    source.y = source.h * 12;
+                    DoFixedAnimation(6,7,6,3,source,IsFixed);
                 break;
             }
             if(lastFrames.first.size() == 0 && state > 1) state = -1;

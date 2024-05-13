@@ -128,19 +128,19 @@ void OverLord::HandleEvents()
             if(IsFixed == false)
             {
                 switch (event.key.keysym.sym){
-                    case SDLK_LEFT:
+                    case SDLK_a:
                         state = 1; //running
                         IsRight = false;
                         std::cout << state << std::endl;
                     break;
 
-                    case SDLK_RIGHT:
+                    case SDLK_d:
                         state = 1; //running
                         IsRight = true; 
                         std::cout << state << std::endl;
                     break;
 
-                    case SDLK_UP:
+                    case SDLK_w:
                         if(updateWarriorRect.y == media.GetLimitY()) //LimitY = Piso
                         {
                             //Si salta, este evento no se volvera a leer hasta que:
@@ -151,28 +151,39 @@ void OverLord::HandleEvents()
                         } 
                     break;
 
-                    case SDLK_SPACE:
-                        if(IsJumping == false)
-                        {
-                            state = 2; //swing
-                            IsFixed = true; 
-                        } 
                 }
             }
             break;
+            case SDL_MOUSEBUTTONDOWN:
 
+                if(IsJumping == false)
+                {
+                    switch (event.button.button)
+                    {
+                        case SDL_BUTTON_LEFT:
+                        state = 2; //swing
+                        IsFixed = true; 
+                        break;
+
+                        case SDL_BUTTON_RIGHT:
+                        state = 3; //swing 2
+                        IsFixed = true; 
+                    }
+                } 
+                break;
+            
             //Al soltar la tecla
             case SDL_KEYUP:
             if(IsFixed == false)
             {
                 switch (event.key.keysym.sym){
-                    case SDLK_LEFT:
-                    case SDLK_RIGHT:
+                    case SDLK_a:
+                    case SDLK_d:
                         state = -1;
                         std::cout << state << std::endl;
                     break;
 
-                    case SDLK_UP:
+                    case SDLK_w:
                         IsJumping = false;
                         std::cout << "Jump FALSE" << std::endl;
                     break;
@@ -194,8 +205,10 @@ void OverLord::Update(){
             else
             {
                 if(state == 2) move += 5;
+                else if(state == 3) move += 2;
                 else move += 8;
             }
+            
         } 
         else if(IsRight == true)
         {
@@ -204,6 +217,7 @@ void OverLord::Update(){
             else
             {
                 if(state == 2) move -= 5;
+                else if(state == 3) move -= 2;
                 else move -= 8;
             }
         } 
