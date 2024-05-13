@@ -3,8 +3,7 @@
 #include <headers/overlord.h>
 
 MediaFiles::MediaFiles()
-{
-   
+{ 
     LimitY = 0;
     screenWidth = 0;
     lastFrames.second = false;
@@ -82,10 +81,10 @@ void MediaFiles::DrawPJ(SDL_Texture* PJtexture, SDL_Rect& source, SDL_Rect& dest
             {
                 case 2:
                     source.y = source.h * 2;
-                    DoFixedAnimation(3,9,6,source,IsFixed);
+                    DoFixedAnimation(3,9,6,2,source,IsFixed);
                 break;
             }
-            if(lastFrames.first.size() == 0) state = -1;
+            if(lastFrames.first.size() == 0 && state > 1) state = -1;
         }
         else if(state == -1) source.y = 0; //static
         else if(state == 1) source.y = 44; //running
@@ -94,18 +93,16 @@ void MediaFiles::DrawPJ(SDL_Texture* PJtexture, SDL_Rect& source, SDL_Rect& dest
     //Direccion.
     if (IsRight == true) SDL_RenderCopyEx(OverLord::renderer, PJtexture, &source, &destiny, 0, NULL, SDL_FLIP_NONE);
     else SDL_RenderCopyEx(OverLord::renderer, PJtexture, &source, &destiny, 0, NULL,SDL_FLIP_HORIZONTAL);
-    
-    //SDL_RenderPresent(renderer);
 }
 
-void MediaFiles::DoFixedAnimation(const int& start, const int& numFrames, const int& framesPerRow, SDL_Rect& source, bool& IsFixed)
+void MediaFiles::DoFixedAnimation(const int& start, const int& numFrames, const int& framesPerRow, const int& duration, SDL_Rect& source, bool& IsFixed)
 {
-    source.y = source.y + ((lastFrames.first.size() + 1) / framesPerRow) * source.h;
+    source.y = source.y + ((lastFrames.first.size()/duration + (start - 1)) / framesPerRow) * source.h;
+
     if(lastFrames.second == true)
     {
         source.x = lastFrames.first.top();
         lastFrames.first.pop();
-        std::cout<<"X: "<<source.x<<"   Y: "<<source.y<<std::endl;
         if(lastFrames.first.empty()) 
         {
             lastFrames.second = false;
@@ -114,24 +111,24 @@ void MediaFiles::DoFixedAnimation(const int& start, const int& numFrames, const 
     }
     else
     {
-        int _sourceX = ((lastFrames.first.size() % framesPerRow) + (start - 1)) * source.w;
+        int _sourceX = ((lastFrames.first.size()/duration % framesPerRow) + (start - 1)) * source.w;
 
-        if(lastFrames.first.size() >= framesPerRow - (start - 1))
+        if(lastFrames.first.size()/duration >= framesPerRow - (start - 1))
         { 
-            _sourceX = ((lastFrames.first.size() - (framesPerRow - (start - 1))) % framesPerRow) * source.w;
+            _sourceX = ((lastFrames.first.size()/duration - (framesPerRow - (start - 1))) % framesPerRow) * source.w;
         }
 
         source.x = _sourceX;
         lastFrames.first.push(source.x);
-        std::cout<<"X: "<<source.x<<"   Y: "<<source.y<<std::endl;
-        if(numFrames == lastFrames.first.size())
+
+        if(numFrames * duration == lastFrames.first.size())
         {
             lastFrames.second = true;
-            lastFrames.first.pop();
+            for(int i = 0; i < duration; ++i) lastFrames.first.pop();
         } 
     }
 }
 
-void DrawMap(SDL_Texture* tex, SDL_Rect src, SDL_Rect dest){
+void MediaFiles::DrawMap(SDL_Texture* tex, SDL_Rect src, SDL_Rect dest){
     SDL_RenderCopy(OverLord::renderer, tex, &src, &dest);
 }

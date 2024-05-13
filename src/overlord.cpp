@@ -1,8 +1,8 @@
 #include <headers/overlord.h>
 #include <headers/exception.h>
 
-SDL_Renderer* OverLord::renderer = nullptr;
-Map* map;
+SDL_Renderer*OverLord::renderer = nullptr;
+Map* map; 
 
 OverLord::OverLord()
 {
@@ -18,6 +18,7 @@ OverLord::OverLord()
     screenHeigth = 720;
     screenWidth = 1280;
 
+    renderer = nullptr;
     background_init = nullptr;
 
     destinationBackground.h = screenHeigth;
@@ -151,8 +152,11 @@ void OverLord::HandleEvents()
                     break;
 
                     case SDLK_SPACE:
-                        state = 2;
-                        IsFixed = true; //swing
+                        if(IsJumping == false)
+                        {
+                            state = 2; //swing
+                            IsFixed = true; 
+                        } 
                 }
             }
             break;

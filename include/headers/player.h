@@ -5,7 +5,7 @@ class Player
 {
     public:
         //Constructor y Destructor
-        Player(int scrnWidth, int scrnHeight );
+        Player(int scrnWidth, int scrnHeight);
         ~Player();
 
         //Getters y Setters

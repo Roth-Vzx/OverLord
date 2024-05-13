@@ -24,7 +24,7 @@ class MediaFiles
         void LoadTextures(const std::vector<char*>& paths, std::vector<SDL_Texture*>& textures);
         void CopyFullTextures(std::vector<SDL_Texture*> textures);
         void DrawPJ(SDL_Texture* PJtexture, SDL_Rect& source, SDL_Rect& destiny, int& state,const bool& IsLeft, bool& IsJumping, bool& IsFixed);
-        void DoFixedAnimation(const int& start, const int& numFrames, const int& framesPerRow, SDL_Rect& source, bool& IsFixed);
+        void DoFixedAnimation(const int& start, const int& numFrames, const int& framesPerRow, const int& duration, SDL_Rect& source, bool& IsFixed);
 
         //Map
         static void DrawMap(SDL_Texture* tex, SDL_Rect src, SDL_Rect dest);
