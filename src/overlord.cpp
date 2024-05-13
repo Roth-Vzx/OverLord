@@ -39,8 +39,6 @@ OverLord::OverLord()
     sourceWarriorRect.w = 69;
     sourceWarriorRect.h = 44;
 
-   // map = new Map();
-
     media.SetLimitY(updateWarriorRect.y);
 };
 
@@ -77,6 +75,8 @@ void OverLord::Init(const char* name, const int& posX, const int& posY, const in
         paths.push_back(SDL_strdup("resources/img/background_layer_1.bmp"));
         paths.push_back(SDL_strdup("resources/img/background_layer_3.bmp"));
         media.LoadTextures(paths,mainBackground);
+
+        map = new Map();
 
         std::cout<<"FINISH INIT"<<std::endl;
     }
@@ -232,7 +232,7 @@ void OverLord::Update(){
 void OverLord::Render(){
     SDL_RenderClear(media.GetRenderer());
     BackgroundLoop();
-    //map->Draw();
+    map->Draw();
     media.DrawPJ(PJ,sourceWarriorRect,updateWarriorRect,state,IsRight,IsJumping,IsFixed);
     SDL_RenderPresent(media.GetRenderer());
 }
@@ -301,7 +301,7 @@ void OverLord::Close()
 {
     std::cout<<"GameState=False\nCall:Close()\n";
 
-    //map->~Map();
+    map->~Map();
 
     if(PJ != nullptr)
     {

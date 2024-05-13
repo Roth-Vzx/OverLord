@@ -7,7 +7,7 @@ class Map{
     Map();
     ~Map();
 
-    void LoadMap(int arr[10][35]);
+    void LoadMap(int arr[22][70]);
     void Draw();
 
     private:
@@ -15,5 +15,5 @@ class Map{
     SDL_Rect src, dest;
     SDL_Texture* tileset; 
 
-    int map [10][35];
+    int map [22][70];
 };
