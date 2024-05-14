@@ -2,10 +2,8 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include <headers/mediaFiles.h>
-#include <headers/map.h>
+#include <headers/mediafiles.h>
 #include <vector>
-
 
 class OverLord
 {
@@ -17,7 +15,7 @@ class OverLord
         //Funciones Publicas
         void Run();
 
-        static SDL_Renderer* renderer; //renderizador
+        //static SDL_Renderer* renderer; //renderizador
         
     private:
         //Atributos

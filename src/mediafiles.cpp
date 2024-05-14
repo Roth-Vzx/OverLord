@@ -2,18 +2,21 @@
 #include <headers/exception.h>
 #include <headers/overlord.h>
 
+//SDL_Renderer* MediaFiles::renderer = nullptr;
+
 MediaFiles::MediaFiles()
 { 
     LimitY = 0;
     screenWidth = 0;
     lastFrames.second = false;
+    renderer = nullptr;
 };
 
 MediaFiles::~MediaFiles(){};
 
-SDL_Renderer* MediaFiles::GetRenderer(){return OverLord::renderer;}
+SDL_Renderer* MediaFiles::GetRenderer(){return renderer;}
 
-void MediaFiles::SetRenderer(SDL_Renderer* value){OverLord::renderer = value;}
+void MediaFiles::SetRenderer(SDL_Renderer* value){renderer = value;}
 
 void MediaFiles::SetLimitY(int value){LimitY = value;}
 
@@ -21,11 +24,13 @@ int MediaFiles::GetLimitY(){return LimitY;}
 
 void MediaFiles::SetScreenWidth(int value){screenWidth = value;}
 
+Map* MediaFiles::GetLevels(){return &Levels;}
+
 SDL_Texture* MediaFiles::CreateTexture(const char* path)
 {
     SDL_Texture* temporalTexture;
 
-    temporalTexture = IMG_LoadTexture(OverLord::renderer,path);
+    temporalTexture = IMG_LoadTexture(renderer,path);
 
     if(temporalTexture == nullptr) throw SDL_Exception(SDL_GetError()); 
 
@@ -48,7 +53,7 @@ void MediaFiles::CopyFullTextures(std::vector<SDL_Texture*> textures)
 {
     for(SDL_Texture* texture : textures)
     {
-        SDL_RenderCopy(OverLord::renderer, texture, NULL, NULL);
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
     }
 }
 
@@ -96,8 +101,8 @@ void MediaFiles::DrawPJ(SDL_Texture* PJtexture, SDL_Rect& source, SDL_Rect& dest
     }
      
     //Direccion.
-    if (IsRight == true) SDL_RenderCopyEx(OverLord::renderer, PJtexture, &source, &destiny, 0, NULL, SDL_FLIP_NONE);
-    else SDL_RenderCopyEx(OverLord::renderer, PJtexture, &source, &destiny, 0, NULL,SDL_FLIP_HORIZONTAL);
+    if (IsRight == true) SDL_RenderCopyEx(renderer, PJtexture, &source, &destiny, 0, NULL, SDL_FLIP_NONE);
+    else SDL_RenderCopyEx(renderer, PJtexture, &source, &destiny, 0, NULL,SDL_FLIP_HORIZONTAL);
 }
 
 void MediaFiles::DoFixedAnimation(const int& start, const int& numFrames, const int& framesPerRow, const int& duration, SDL_Rect& source, bool& IsFixed)
@@ -108,6 +113,7 @@ void MediaFiles::DoFixedAnimation(const int& start, const int& numFrames, const 
     {
         source.x = lastFrames.first.top();
         lastFrames.first.pop();
+
         if(lastFrames.first.empty()) 
         {
             lastFrames.second = false;
@@ -134,6 +140,39 @@ void MediaFiles::DoFixedAnimation(const int& start, const int& numFrames, const 
     }
 }
 
-void MediaFiles::DrawMap(SDL_Texture* tex, SDL_Rect src, SDL_Rect dest){
-    SDL_RenderCopy(OverLord::renderer, tex, &src, &dest);
+void MediaFiles::DrawMap()
+{
+    int type;
+
+    for(int row = 0; row< 22; ++row){
+        for (int column = 0; column < 70; ++column)
+        {
+            type = Levels.GetPosMap(row,column);
+
+            Levels.SetDestinyX(column * 32);
+            Levels.SetDestinyY(row * 32);
+
+            switch (type)
+            {
+            //Dirt left
+                case 1:
+                    Levels.SetSourceX(48);
+                    SDL_RenderCopy(renderer, Levels.GetTileset(), Levels.GetSource(), Levels.GetDestiny());
+                break;
+
+            //Dirt Center
+                case 2:
+                    Levels.SetSourceX(0);
+                    Levels.SetSourceY(0);
+                    SDL_RenderCopy(renderer, Levels.GetTileset(), Levels.GetSource(), Levels.GetDestiny());
+                break;
+
+            //Dirt Right.
+                case 3:
+                    Levels.SetSourceX(72);
+                    SDL_RenderCopy(renderer, Levels.GetTileset(), Levels.GetSource(), Levels.GetDestiny());
+                break;
+            }
+        }
+    }
 }

@@ -1,6 +1,5 @@
 #include<headers/map.h>
 
-
 int lvl1[22][70] = {
 
     { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, },
@@ -31,8 +30,6 @@ int lvl1[22][70] = {
 
 Map::Map()
 {
-    tileset = MediaFiles::CreateTexture("resources/img/map_tileset.png");
-
     LoadMap(lvl1);
 
     src.y = 0;
@@ -44,6 +41,19 @@ Map::Map()
 
 Map::~Map(){};
 
+void Map::SetSourceX(int value){src.x = value;}
+void Map::SetDestinyX(int value){dest.x = value;}
+void Map::SetSourceY(int value){src.y = value;}
+void Map::SetDestinyY(int value){dest.y = value;}
+
+SDL_Rect* Map::GetSource(){return &src;}
+SDL_Rect* Map::GetDestiny(){return &dest;}
+
+SDL_Texture* Map::GetTileset(){return tileset;}
+void Map::SetTileset(SDL_Texture* value){tileset = value;}
+
+int Map::GetPosMap(const int& row, const int& column){return map[row][column];}
+
 void Map::LoadMap(int arr[22][70])
 {
     for(int row = 0; row< 22; ++row){
@@ -54,11 +64,12 @@ void Map::LoadMap(int arr[22][70])
     }
 }
 
-void Map::Draw()
+/*void Map::Draw()
 {
     int type;
 
-    for(int row = 0; row< 22; ++row){
+    for(int row = 0; row< 22; ++row)
+    {
         for (int column = 0; column < 70; ++column)
         {
             type = map[row][column];
@@ -71,7 +82,7 @@ void Map::Draw()
             //Dirt left
             case 1:
                 src.x = 48;
-                SDL_RenderCopy(OverLord::renderer, tileset, &src, &dest);
+                SDL_RenderCopy(MediaFiles::GetRenderer(), tileset, &src, &dest);
                 //MediaFiles::DrawMap(tileset, src, dest);
             break;
 
@@ -94,4 +105,4 @@ void Map::Draw()
             }
         }
     }
-}
+}*/

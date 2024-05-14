@@ -1,8 +1,7 @@
 #include <headers/overlord.h>
 #include <headers/exception.h>
 
-SDL_Renderer*OverLord::renderer = nullptr;
-Map* map; 
+//SDL_Renderer* OverLord::renderer = nullptr;
 
 OverLord::OverLord()
 {
@@ -18,7 +17,7 @@ OverLord::OverLord()
     screenHeigth = 720;
     screenWidth = 1280;
 
-    renderer = nullptr;
+    //renderer = nullptr;
     background_init = nullptr;
 
     destinationBackground.h = screenHeigth;
@@ -61,6 +60,7 @@ void OverLord::Init(const char* name, const int& posX, const int& posY, const in
         if(window == nullptr) throw SDL_Exception(SDL_GetError());
 
         media.SetRenderer(SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED));
+
         if(media.GetRenderer() == nullptr) throw SDL_Exception(SDL_GetError());
 
         if(SDL_SetRenderDrawColor(media.GetRenderer(), 200, 200, 200, 200)<0) throw SDL_Exception(SDL_GetError());
@@ -71,12 +71,12 @@ void OverLord::Init(const char* name, const int& posX, const int& posY, const in
         background_init = media.CreateTexture("resources/img/Init.png");
         PJ = media.CreateTexture("resources/img/character/warrior.png");
 
+        (*media.GetLevels()).SetTileset(media.CreateTexture("resources/img/map_tileset.png"));
+
         std::vector<char*> paths;
         paths.push_back(SDL_strdup("resources/img/background_layer_1.bmp"));
         paths.push_back(SDL_strdup("resources/img/background_layer_3.bmp"));
         media.LoadTextures(paths,mainBackground);
-
-        map = new Map();
 
         std::cout<<"FINISH INIT"<<std::endl;
     }
@@ -123,40 +123,40 @@ void OverLord::HandleEvents()
                 return;
             break;
 
-            //Al presionar la tecla
+            //Al presionar tecla en keyboard
             case SDL_KEYDOWN:
-            if(IsFixed == false)
-            {
-                switch (event.key.keysym.sym){
-                    case SDLK_a:
-                        state = 1; //running
-                        IsRight = false;
-                        std::cout << state << std::endl;
-                    break;
+                if(IsFixed == false)
+                {
+                    switch (event.key.keysym.sym){
+                        case SDLK_a:
+                            state = 1; //running
+                            IsRight = false; //Left
+                            std::cout << state << std::endl;
+                        break;
 
-                    case SDLK_d:
-                        state = 1; //running
-                        IsRight = true; 
-                        std::cout << state << std::endl;
-                    break;
+                        case SDLK_d:
+                            state = 1; //running
+                            IsRight = true; //Right
+                            std::cout << state << std::endl;
+                        break;
 
-                    case SDLK_w:
-                        if(updateWarriorRect.y == media.GetLimitY()) //LimitY = Piso
-                        {
-                            //Si salta, este evento no se volvera a leer hasta que:
-                            //1) La persona deje de presionar el boton
-                            //2) el personaje alcance su altura maxima de salto y vuelva a bajar
-                            IsJumping = true; // jump
-                            std::cout << "Jump TRUE" << std::endl;
-                        } 
-                    break;
+                        case SDLK_w:
+                            if(updateWarriorRect.y == media.GetLimitY()) //LimitY = Piso
+                            {
+                                //Si salta, este evento no se volvera a leer hasta que:
+                                //deje de presionar el boton o hasta que suba a su altura maxima y bajar
+                                IsJumping = true; // jump
+                                std::cout << "Jump TRUE" << std::endl;
+                            } 
+                        break;
 
+                    }
                 }
-            }
             break;
-            case SDL_MOUSEBUTTONDOWN:
 
-                if(IsJumping == false)
+            //Al presionar tecla en Mouse
+            case SDL_MOUSEBUTTONDOWN:
+                if(IsJumping == false && IsFixed == false)
                 {
                     switch (event.button.button)
                     {
@@ -167,28 +167,29 @@ void OverLord::HandleEvents()
 
                         case SDL_BUTTON_RIGHT:
                         state = 3; //swing 2
-                        IsFixed = true; 
+                        IsFixed = true;
+                        break;
                     }
                 } 
-                break;
+            break;
             
             //Al soltar la tecla
             case SDL_KEYUP:
-            if(IsFixed == false)
-            {
-                switch (event.key.keysym.sym){
-                    case SDLK_a:
-                    case SDLK_d:
-                        state = -1;
-                        std::cout << state << std::endl;
-                    break;
+                if(IsFixed == false)
+                {
+                    switch (event.key.keysym.sym){
+                        case SDLK_a:
+                        case SDLK_d:
+                            state = -1;
+                            std::cout << state << std::endl;
+                        break;
 
-                    case SDLK_w:
-                        IsJumping = false;
-                        std::cout << "Jump FALSE" << std::endl;
-                    break;
+                        case SDLK_w:
+                            IsJumping = false;
+                            std::cout << "Jump FALSE" << std::endl;
+                        break;
+                    }
                 }
-            }
             break;
         }
     }
@@ -232,7 +233,7 @@ void OverLord::Update(){
 void OverLord::Render(){
     SDL_RenderClear(media.GetRenderer());
     BackgroundLoop();
-    map->Draw();
+    media.DrawMap();
     media.DrawPJ(PJ,sourceWarriorRect,updateWarriorRect,state,IsRight,IsJumping,IsFixed);
     SDL_RenderPresent(media.GetRenderer());
 }
@@ -300,8 +301,6 @@ void OverLord::MenuInit(){
 void OverLord::Close()
 {
     std::cout<<"GameState=False\nCall:Close()\n";
-
-    map->~Map();
 
     if(PJ != nullptr)
     {
