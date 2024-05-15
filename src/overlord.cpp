@@ -14,11 +14,15 @@ OverLord::OverLord()
     IsRight = true;
     IsFixed = false;
     window = nullptr;
+    sky = nullptr;
+    cloud_Dark = nullptr;
+    cloud_Light = nullptr;
+    name_Init = nullptr;
+    pressToStar = nullptr;
     screenHeigth = 720;
     screenWidth = 1280;
 
     //renderer = nullptr;
-    background_init = nullptr;
 
     destinationBackground.h = screenHeigth;
     destinationBackground.w = screenWidth;
@@ -28,10 +32,50 @@ OverLord::OverLord()
     destinationMirrorBackground.w = screenWidth;
     destinationMirrorBackground.y = 0;
 
+    motion_Sky.h = screenHeigth;
+    motion_Sky.w = screenWidth;
+    motion_Sky.x = 0;
+    motion_Sky.y = 0; 
+
+    motionMirror_sky.h = screenHeigth;
+    motionMirror_sky.w = screenWidth;
+    motionMirror_sky.x = -screenWidth;
+    motionMirror_sky.y = 0;
+
+    motion_CL.h = screenHeigth;
+    motion_CL.w = screenWidth;
+    motion_CL.x = 0;
+    motion_CL.y = 0; 
+
+    motionMirror_CL.h = screenHeigth;
+    motionMirror_CL.w = screenWidth;
+    motionMirror_CL.x = -screenWidth;
+    motionMirror_CL.y = 0;
+
+    motion_CD.h = screenHeigth;
+    motion_CD.w = screenWidth;
+    motion_CD.x = 0;
+    motion_CD.y = 0; 
+
+    motionMirror_CD.h = screenHeigth;
+    motionMirror_CD.w = screenWidth;
+    motionMirror_CD.x = screenWidth;
+    motionMirror_CD.y = 0;
+
     updateWarriorRect.x = screenWidth/2 - screenWidth/25;
     updateWarriorRect.y = screenHeigth/2 + screenHeigth/5;
     updateWarriorRect.w = 180;
     updateWarriorRect.h = 180;
+
+    location_Name.h = 300;
+    location_Name.w = 890;
+    location_Name.x = screenWidth/2 - screenWidth/3;
+    location_Name.y = 60;
+
+    location_PressToStar.h = 160;
+    location_PressToStar.w = 800;
+    location_PressToStar.x = screenWidth/2 - screenWidth/3.3;
+    location_PressToStar.y = 400;
 
     sourceWarriorRect.x = 0;
     sourceWarriorRect.y = 0;
@@ -68,7 +112,13 @@ void OverLord::Init(const char* name, const int& posX, const int& posY, const in
         int imgFlags = IMG_INIT_PNG;
         if(!(IMG_Init(imgFlags)&imgFlags)) throw SDL_Exception(SDL_GetError());
 
-        background_init = media.CreateTexture("resources/img/Init.png");
+
+        sky = media.CreateTexture("resources/img/background_0.png");
+        cloud_Light = media.CreateTexture("resources/img/background_1.png");
+        cloud_Dark = media.CreateTexture("resources/img/background_2.png");
+        name_Init = media.CreateTexture("resources/img/Name.png");
+        pressToStar = media.CreateTexture("resources/img/PressToStar.png");
+
         PJ = media.CreateTexture("resources/img/character/warrior.png");
 
         (*media.GetLevels()).SetTileset(media.CreateTexture("resources/img/map_tileset.png"));
@@ -262,19 +312,47 @@ void OverLord::BackgroundLoop()
 
 void OverLord::MenuInit(){
 
-    //Firts Frame of Background
-
-    SDL_RenderCopy(media.GetRenderer(), background_init, NULL, NULL);
-    SDL_RenderPresent(media.GetRenderer());
-
-    ///////////////////////////
-
-    //Second Frame of Background
+    //firts and Second Frame of Background
 
     SDL_Event event;
     bool wait = true;
     while (wait == true)
     {
+        SDL_RenderCopy(media.GetRenderer(), sky, NULL, &motion_Sky);
+        SDL_RenderCopy(media.GetRenderer(), sky, NULL, &motionMirror_sky);
+        SDL_RenderCopy(media.GetRenderer(), cloud_Light, NULL, &motion_CL);
+        SDL_RenderCopy(media.GetRenderer(), cloud_Light, NULL, &motionMirror_CL);
+        SDL_RenderCopy(media.GetRenderer(), cloud_Dark, NULL, &motion_CD);
+        SDL_RenderCopy(media.GetRenderer(), cloud_Dark, NULL, &motionMirror_CD);
+        SDL_RenderCopy(media.GetRenderer(), name_Init, NULL, &location_Name);
+        SDL_RenderCopy(media.GetRenderer(), pressToStar, NULL, &location_PressToStar);
+        SDL_RenderPresent(media.GetRenderer());
+
+        double start = SDL_GetTicks();
+        const int msPerframe = 28;
+        double end = SDL_GetTicks();
+        auto delay = start + msPerframe - end;
+        if(delay > 0) SDL_Delay(delay);
+
+        motion_Sky.x -= 1;
+        motionMirror_sky.x -= 1;
+        
+        motion_CL.x += 1;
+        motionMirror_CL.x += 1;
+        
+        motion_CD.x -= 2;
+        motionMirror_CD.x -= 2;
+
+        if (motionMirror_sky.x <= -screenWidth) motionMirror_sky.x *= -1;
+        else if (motion_Sky.x <= -screenWidth) motion_Sky.x *= -1;
+
+        if (motionMirror_CL.x >= screenWidth) motionMirror_CL.x *= -1;
+        else if (motion_CL.x >= screenWidth) motion_CL.x *= -1;
+
+        if (motionMirror_CD.x <= -screenWidth) motionMirror_CD.x *= -1;
+        else if (motion_CD.x <= -screenWidth) motion_CD.x *= -1;
+
+
         SDL_PollEvent(&event);
         switch (event.type)
         {
@@ -309,11 +387,39 @@ void OverLord::Close()
         std::cout<<"Destroy PJ"<<std::endl;
     }
 
-    if(background_init != nullptr)
+    if(name_Init != nullptr)
     {
-        background_init = nullptr;
-        SDL_DestroyTexture(background_init);
-        std::cout<<"Destroy Init Background"<<std::endl;
+        name_Init = nullptr;
+        SDL_DestroyTexture(name_Init);
+        std::cout<<"Destroy name_Init"<<std::endl;
+    }
+
+    if(pressToStar != nullptr)
+    {
+        pressToStar = nullptr;
+        SDL_DestroyTexture(pressToStar);
+        std::cout<<"Destroy name_Init"<<std::endl;
+    }
+
+    if(sky != nullptr)
+    {
+        sky = nullptr;
+        SDL_DestroyTexture(sky);
+        std::cout<<"Destroy sky"<<std::endl;
+    }
+
+    if(cloud_Dark != nullptr)
+    {
+        cloud_Dark = nullptr;
+        SDL_DestroyTexture(cloud_Dark);
+        std::cout<<"Destroy cloud_Dark"<<std::endl;
+    }
+
+    if(cloud_Light != nullptr)
+    {
+        cloud_Light = nullptr;
+        SDL_DestroyTexture(cloud_Light);
+        std::cout<<"Destroy cloud_Light"<<std::endl;
     }
 
     while(!mainBackground.empty())

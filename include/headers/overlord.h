@@ -30,9 +30,24 @@ class OverLord
         SDL_Rect destinationBackground;
         SDL_Rect destinationMirrorBackground;
         std::vector<SDL_Texture*> mainBackground;
+        
 
         //Fondo Inicial
-        SDL_Texture* background_init;
+        SDL_Rect motion_Sky;
+        SDL_Rect motionMirror_sky;
+        SDL_Rect motion_CL;
+        SDL_Rect motion_CD;
+        SDL_Rect motionMirror_CL;
+        SDL_Rect motionMirror_CD;
+        SDL_Rect location_Name;
+        SDL_Rect location_PressToStar;
+        
+        //SDL_Texture* background_init;
+        SDL_Texture* name_Init;
+        SDL_Texture* pressToStar;
+        SDL_Texture* sky;
+        SDL_Texture* cloud_Dark;
+        SDL_Texture* cloud_Light;
 
         //Update 
         int move;
