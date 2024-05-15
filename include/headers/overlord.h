@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <headers/mediafiles.h>
+#include <headers/player.h>
 #include <vector>
 
 class OverLord
@@ -30,7 +31,6 @@ class OverLord
         SDL_Rect destinationBackground;
         SDL_Rect destinationMirrorBackground;
         std::vector<SDL_Texture*> mainBackground;
-        
 
         //Fondo Inicial
         SDL_Rect motion_Sky;
@@ -49,19 +49,13 @@ class OverLord
         SDL_Texture* cloud_Dark;
         SDL_Texture* cloud_Light;
 
+        Player mainPJ;
         //Update 
         int move;
-        int state;
-        bool IsRight;
-        bool IsJumping;
-        bool IsFixed;
         
         //Render
         //Animacion del personaje.
         int frameIndexPlayer;
-        SDL_Texture* PJ;
-        SDL_Rect sourceWarriorRect;
-        SDL_Rect updateWarriorRect;
 
         //Funciones Privadas
         void Init(const char* name, const int& posX, const int& posY, const int& width, const int& height, const uint32_t flags);

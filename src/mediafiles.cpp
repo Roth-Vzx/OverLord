@@ -1,6 +1,5 @@
 #include <headers/mediaFiles.h>
 #include <headers/exception.h>
-#include <headers/overlord.h>
 
 //SDL_Renderer* MediaFiles::renderer = nullptr;
 
@@ -105,6 +104,54 @@ void MediaFiles::DrawPJ(SDL_Texture* PJtexture, SDL_Rect& source, SDL_Rect& dest
     else SDL_RenderCopyEx(renderer, PJtexture, &source, &destiny, 0, NULL,SDL_FLIP_HORIZONTAL);
 }
 
+void MediaFiles::DrawPJ(Player& PJ)
+{
+    if(PJ.GetJump() == true)
+    {
+        //Si salta comenzara a subir hasta un cierto limite (LimitY/2)
+        //Cuando llegue a ese limite, jump sera falso
+
+        PJ.SetSourceY(308); //jump
+
+        if(PJ.GetUpdateTexture()->y >= LimitY/2) PJ.SetUpdateY(PJ.GetUpdateTexture()->y - 6);
+        else PJ.SetJump(false);
+    }
+    else if(PJ.GetJump() == false)
+    {
+        if(PJ.GetUpdateTexture()->y < LimitY)
+        {
+            //Si el personaje acaba de saltar
+            //Con este if se asegura que vuelva a bajar
+
+            PJ.SetSourceY(351);  //jump
+            PJ.SetSourceX(0);
+            PJ.SetUpdateY((PJ.GetUpdateTexture())->y + 6);
+        }
+        else if(*PJ.GetIsFixed() == true) 
+        {
+            switch (PJ.GetState())
+            {
+                case 2:
+                    PJ.SetSourceY(PJ.GetSourceTexture()->h * 2);
+                    DoFixedAnimation(3,9,6,3,*(PJ.GetSourceTexture()),*(PJ.GetIsFixed()));
+                break;
+
+                case 3:
+                    PJ.SetSourceY(PJ.GetSourceTexture()->h * 12);
+                    DoFixedAnimation(6,7,6,3,*(PJ.GetSourceTexture()),*(PJ.GetIsFixed()));
+                break;
+            }
+            if(lastFrames.first.size() == 0 && PJ.GetState() > 1) PJ.SetState(-1);
+        }
+        else if(PJ.GetState() == -1) PJ.SetSourceY(0); //static
+        else if(PJ.GetState() == 1) PJ.SetSourceY(44); //running
+    }
+     
+    //Direccion.
+    if (PJ.GetIsRight() == true) SDL_RenderCopyEx(renderer, PJ.GetTexture(), PJ.GetSourceTexture(), PJ.GetUpdateTexture(), 0, NULL, SDL_FLIP_NONE);
+    else SDL_RenderCopyEx(renderer, PJ.GetTexture(), PJ.GetSourceTexture(), PJ.GetUpdateTexture(), 0, NULL,SDL_FLIP_HORIZONTAL);
+}
+
 void MediaFiles::DoFixedAnimation(const int& start, const int& numFrames, const int& framesPerRow, const int& duration, SDL_Rect& source, bool& IsFixed)
 {
     source.y = source.y + ((lastFrames.first.size()/duration + (start - 1)) / framesPerRow) * source.h;
@@ -156,12 +203,15 @@ void MediaFiles::DrawMap()
             {
             //Dirt left
                 case 1:
+                //std::cout<<"Case1Dirt"<<std::endl;
                     Levels.SetSourceX(48);
+                    //std::cout<<Levels.GetDestiny()->y<<std::endl;
                     SDL_RenderCopy(renderer, Levels.GetTileset(), Levels.GetSource(), Levels.GetDestiny());
                 break;
 
             //Dirt Center
                 case 2:
+                //std::cout<<"Case2Dirt"<<std::endl;
                     Levels.SetSourceX(0);
                     Levels.SetSourceY(0);
                     SDL_RenderCopy(renderer, Levels.GetTileset(), Levels.GetSource(), Levels.GetDestiny());
@@ -169,6 +219,7 @@ void MediaFiles::DrawMap()
 
             //Dirt Right.
                 case 3:
+                //std::cout<<"Case3Dirt"<<std::endl;
                     Levels.SetSourceX(72);
                     SDL_RenderCopy(renderer, Levels.GetTileset(), Levels.GetSource(), Levels.GetDestiny());
                 break;

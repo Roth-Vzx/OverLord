@@ -2,7 +2,7 @@
 #include <headers/player.h>
 
 //Constructor.
-Player::Player(int screenWidth, int screenHeigth)
+Player::Player()
 {
     //texturas.
     int frameIndexTexture = 0;
@@ -10,15 +10,15 @@ Player::Player(int screenWidth, int screenHeigth)
     SDL_Rect sourceTextureRect;
     SDL_Rect updateTextureRect;
 
-    updateTextureRect.x = screenWidth/2 - screenWidth/25;
-    updateTextureRect.y = screenHeigth/2 + screenHeigth/5;
-    updateTextureRect.w = 180;
-    updateTextureRect.h = 190;
+    updateTextureRect.x = 0;
+    updateTextureRect.y = 0;
+    updateTextureRect.w = 0;
+    updateTextureRect.h = 0;
 
     sourceTextureRect.x = 0;
     sourceTextureRect.y = 0;
-    sourceTextureRect.w = 69;
-    sourceTextureRect.h = 44;
+    sourceTextureRect.w = 0;
+    sourceTextureRect.h = 0;
 
     //estados.
     frameIndexTexture = 0;
@@ -27,7 +27,7 @@ Player::Player(int screenWidth, int screenHeigth)
     isRight = true;
 
     //stats.
-     heal = 2;
+     heal = 0;
      armor = 0;
 };
 
@@ -37,12 +37,14 @@ Player::~Player(){};
 //Setters y Getters
     //state for pj 
     void Player::SetState(int value){state = value;}
-    void Player::SetIsRight(bool value){jump = value;}
-    void Player::SetJump(bool value){isRight = value;}
+    void Player::SetIsRight(bool value){isRight = value;}
+    void Player::SetJump(bool value){jump = value;}
+    void Player::SetIsFixed(bool value){isFixed = value;}
 
     int Player::GetState(){return state;}
     bool Player::GetIsRight(){return isRight;}
     bool Player::GetJump(){return jump;}
+    bool* Player::GetIsFixed(){return &isFixed;}
 
     //texturas.
     void Player::SetTexture(SDL_Texture* value){Texture = value;}
@@ -53,8 +55,14 @@ Player::~Player(){};
 
     SDL_Texture* Player::GetTexture(){return Texture;}
     int Player::GetframeIndexTexture(){return frameIndexTexture;}
-    SDL_Rect Player::GetSourceTexture(){return sourceTextureRect;}
-    SDL_Rect Player::GetUpdateTexture(){return updateTextureRect;}
+    SDL_Rect* Player::GetSourceTexture(){return &sourceTextureRect;}
+    SDL_Rect* Player::GetUpdateTexture(){return &updateTextureRect;}
+
+    void Player::SetSourceX(int value){sourceTextureRect.x = value;}
+    void Player::SetSourceY(int value){sourceTextureRect.y = value;}
+
+    void Player::SetUpdateX(int value){updateTextureRect.x = value;}
+    void Player::SetUpdateY(int value){updateTextureRect.y = value;}
 
 //Funciones
 //Acciones
@@ -65,9 +73,4 @@ void Player::PJump(){}
 void Player::PjUpdate(){
     frameIndexTexture = (int(((SDL_GetTicks() / 100) % 10)));
     sourceTextureRect.x = (frameIndexTexture % 6) * 69;
-}
-
-//Render.
-void Player::PjRender(MediaFiles &media ){
-   // media.DrawPJ(Texture,sourceTextureRect,updateTextureRect,state,isRight,jump);
 }

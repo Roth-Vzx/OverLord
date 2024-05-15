@@ -35,8 +35,8 @@ Map::Map()
     src.y = 0;
     dest.h = dest.w = 42;
     src.h  = src.w  = 20;
-
     dest.x = dest.y = 0;
+    dest.y = 10;
 }
 
 Map::~Map(){};

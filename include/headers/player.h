@@ -1,11 +1,13 @@
 #pragma once
-#include <headers/mediaFiles.h>
+#include <iostream>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 class Player
 {
     public:
         //Constructor y Destructor
-        Player(int scrnWidth, int scrnHeight);
+        Player();
         ~Player();
 
         //Getters y Setters
@@ -17,13 +19,20 @@ class Player
 
                 SDL_Texture* GetTexture();
                 int GetframeIndexTexture();
-                SDL_Rect GetSourceTexture();
-                SDL_Rect GetUpdateTexture();
+                SDL_Rect* GetSourceTexture();
+                SDL_Rect* GetUpdateTexture();
+
+                void SetSourceX(int value);
+                void SetSourceY(int value);
+
+                void SetUpdateX(int value);
+                void SetUpdateY(int value);
 
             //state for pj 
                 void SetJump(bool jump);
                 void SetState(int state);
                 void SetIsRight(bool isRight);
+                void SetIsFixed(bool isFixed);
 
                 void SetHeal(int state);
                 void SetArmor(int state);
@@ -31,6 +40,7 @@ class Player
                 int GetState();
                 bool GetIsRight();
                 bool GetJump();
+                bool* GetIsFixed();
 
                 int GetHeal();
                 int GetArmor();
@@ -43,12 +53,8 @@ class Player
             //update.
             void PjUpdate();
 
-            //Render.
-            void PjRender(MediaFiles &media);
-
     private:
         //Texturas
-        MediaFiles tmpMedia;
         int frameIndexTexture;
         SDL_Texture* Texture;
         SDL_Rect sourceTextureRect, updateTextureRect;
@@ -61,4 +67,5 @@ class Player
         int state;
         bool isRight;
         bool jump;
+        bool isFixed;
 };

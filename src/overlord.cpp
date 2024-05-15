@@ -9,20 +9,16 @@ OverLord::OverLord()
     gameState = true;
     frameIndexPlayer = 0;
     move = 0;
-    state = -1;
-    IsJumping = false;
-    IsRight = true;
-    IsFixed = false;
+
     window = nullptr;
     sky = nullptr;
     cloud_Dark = nullptr;
     cloud_Light = nullptr;
     name_Init = nullptr;
     pressToStar = nullptr;
+
     screenHeigth = 720;
     screenWidth = 1280;
-
-    //renderer = nullptr;
 
     destinationBackground.h = screenHeigth;
     destinationBackground.w = screenWidth;
@@ -62,10 +58,13 @@ OverLord::OverLord()
     motionMirror_CD.x = screenWidth;
     motionMirror_CD.y = 0;
 
-    updateWarriorRect.x = screenWidth/2 - screenWidth/25;
-    updateWarriorRect.y = screenHeigth/2 + screenHeigth/5;
-    updateWarriorRect.w = 180;
-    updateWarriorRect.h = 180;
+    mainPJ.SetUpdateX(screenWidth/2 - screenWidth/25);
+    mainPJ.SetUpdateY(screenHeigth/2 + screenHeigth/5);
+    mainPJ.GetUpdateTexture()->w = 180;
+    mainPJ.GetUpdateTexture()->h = 180;
+
+    mainPJ.GetSourceTexture()->w = 69;
+    mainPJ.GetSourceTexture()->h = 44;
 
     location_Name.h = 300;
     location_Name.w = 890;
@@ -77,12 +76,7 @@ OverLord::OverLord()
     location_PressToStar.x = screenWidth/2 - screenWidth/3.3;
     location_PressToStar.y = 400;
 
-    sourceWarriorRect.x = 0;
-    sourceWarriorRect.y = 0;
-    sourceWarriorRect.w = 69;
-    sourceWarriorRect.h = 44;
-
-    media.SetLimitY(updateWarriorRect.y);
+    media.SetLimitY(mainPJ.GetUpdateTexture()->y);
 };
 
 OverLord::~OverLord(){};
@@ -112,14 +106,13 @@ void OverLord::Init(const char* name, const int& posX, const int& posY, const in
         int imgFlags = IMG_INIT_PNG;
         if(!(IMG_Init(imgFlags)&imgFlags)) throw SDL_Exception(SDL_GetError());
 
-
         sky = media.CreateTexture("resources/img/background_0.png");
         cloud_Light = media.CreateTexture("resources/img/background_1.png");
         cloud_Dark = media.CreateTexture("resources/img/background_2.png");
         name_Init = media.CreateTexture("resources/img/Name.png");
         pressToStar = media.CreateTexture("resources/img/PressToStar.png");
 
-        PJ = media.CreateTexture("resources/img/character/warrior.png");
+        mainPJ.SetTexture(media.CreateTexture("resources/img/character/warrior.png"));
 
         (*media.GetLevels()).SetTileset(media.CreateTexture("resources/img/map_tileset.png"));
 
@@ -175,49 +168,48 @@ void OverLord::HandleEvents()
 
             //Al presionar tecla en keyboard
             case SDL_KEYDOWN:
-                if(IsFixed == false)
+                if(*mainPJ.GetIsFixed() == false)
                 {
                     switch (event.key.keysym.sym){
                         case SDLK_a:
-                            state = 1; //running
-                            IsRight = false; //Left
-                            std::cout << state << std::endl;
+                            mainPJ.SetState(1); //running
+                            mainPJ.SetIsRight(false); //Left
+                            std::cout << mainPJ.GetState() << std::endl << mainPJ.GetIsRight()<< std::endl;
                         break;
 
                         case SDLK_d:
-                            state = 1; //running
-                            IsRight = true; //Right
-                            std::cout << state << std::endl;
+                            mainPJ.SetState(1); //running
+                            mainPJ.SetIsRight(true); //Right
+                            std::cout << mainPJ.GetState() << std::endl << mainPJ.GetIsRight()<< std::endl;
                         break;
 
                         case SDLK_w:
-                            if(updateWarriorRect.y == media.GetLimitY()) //LimitY = Piso
+                            if(mainPJ.GetUpdateTexture()->y == media.GetLimitY()) //LimitY = Piso
                             {
                                 //Si salta, este evento no se volvera a leer hasta que:
                                 //deje de presionar el boton o hasta que suba a su altura maxima y bajar
-                                IsJumping = true; // jump
+                                mainPJ.SetJump(true); // jump
                                 std::cout << "Jump TRUE" << std::endl;
                             } 
                         break;
-
                     }
                 }
             break;
 
             //Al presionar tecla en Mouse
             case SDL_MOUSEBUTTONDOWN:
-                if(IsJumping == false && IsFixed == false)
+                if(mainPJ.GetJump() == false && *mainPJ.GetIsFixed() == false)
                 {
                     switch (event.button.button)
                     {
                         case SDL_BUTTON_LEFT:
-                        state = 2; //swing
-                        IsFixed = true; 
+                            mainPJ.SetState(2); //swing
+                            mainPJ.SetIsFixed(true); 
                         break;
 
                         case SDL_BUTTON_RIGHT:
-                        state = 3; //swing 2
-                        IsFixed = true;
+                            mainPJ.SetState(3); //swing 2
+                            mainPJ.SetIsFixed(true); 
                         break;
                     }
                 } 
@@ -225,17 +217,17 @@ void OverLord::HandleEvents()
             
             //Al soltar la tecla
             case SDL_KEYUP:
-                if(IsFixed == false)
+                if(*mainPJ.GetIsFixed() == false)
                 {
                     switch (event.key.keysym.sym){
                         case SDLK_a:
                         case SDLK_d:
-                            state = -1;
-                            std::cout << state << std::endl;
+                            mainPJ.SetState(-1);
+                            std::cout << mainPJ.GetState() << std::endl;
                         break;
 
                         case SDLK_w:
-                            IsJumping = false;
+                            mainPJ.SetJump(false);
                             std::cout << "Jump FALSE" << std::endl;
                         break;
                     }
@@ -248,27 +240,27 @@ void OverLord::HandleEvents()
 void OverLord::Update(){
     //Movimiento del personaje.
 
-        if(state == -1); //estatico.
-        else if(IsRight == false)
+        if(mainPJ.GetState() == -1); //estatico.
+        else if(mainPJ.GetIsRight() == false)
         {
             //izquierda.
-            if(IsJumping == true) move += 8;
+            if(mainPJ.GetJump() == true) move += 8;
             else
             {
-                if(state == 2) move += 5;
-                else if(state == 3) move += 2;
+                if(mainPJ.GetState() == 2) move += 5;
+                else if(mainPJ.GetState() == 3) move += 2;
                 else move += 8;
             }
             
         } 
-        else if(IsRight == true)
+        else if(mainPJ.GetIsRight() == true)
         {
             //derecha.
-            if(IsJumping == true) move -= 8;
+            if(mainPJ.GetJump() == true) move -= 8;
             else
             {
-                if(state == 2) move -= 5;
-                else if(state == 3) move -= 2;
+                if(mainPJ.GetState() == 2) move -= 5;
+                else if(mainPJ.GetState() == 3) move -= 2;
                 else move -= 8;
             }
         } 
@@ -277,14 +269,14 @@ void OverLord::Update(){
         //Player
         
         frameIndexPlayer = int(((SDL_GetTicks() / 100) % 12));
-        sourceWarriorRect.x = (frameIndexPlayer % 6) * 69;        
+        mainPJ.SetSourceX((frameIndexPlayer % 6) * mainPJ.GetSourceTexture()->w);     
 }
 
 void OverLord::Render(){
     SDL_RenderClear(media.GetRenderer());
     BackgroundLoop();
     media.DrawMap();
-    media.DrawPJ(PJ,sourceWarriorRect,updateWarriorRect,state,IsRight,IsJumping,IsFixed);
+    media.DrawPJ(mainPJ);
     SDL_RenderPresent(media.GetRenderer());
 }
 
@@ -380,10 +372,10 @@ void OverLord::Close()
 {
     std::cout<<"GameState=False\nCall:Close()\n";
 
-    if(PJ != nullptr)
+    if(mainPJ.GetTexture() != nullptr)
     {
-        PJ = nullptr;
-        SDL_DestroyTexture(PJ);
+        mainPJ.SetTexture(nullptr);
+        SDL_DestroyTexture(mainPJ.GetTexture());
         std::cout<<"Destroy PJ"<<std::endl;
     }
 
