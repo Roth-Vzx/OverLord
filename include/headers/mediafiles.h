@@ -18,8 +18,6 @@ class MediaFiles
         SDL_Renderer* GetRenderer();
         void SetRenderer(SDL_Renderer* value);
         void SetScreenWidth(int Width);
-        void SetLimitY(int Heigth);
-        int GetLimitY();
 
         Map* GetLevels();
 
@@ -29,6 +27,7 @@ class MediaFiles
         void CopyFullTextures(std::vector<SDL_Texture*> textures);
         void DrawPJ(SDL_Texture* PJtexture, SDL_Rect& source, SDL_Rect& destiny, int& state,const bool& IsLeft, bool& IsJumping, bool& IsFixed);
         void DrawPJ(Player& PJ);
+        void DrawEnemy(Player& PJ);
         void DoFixedAnimation(const int& start, const int& numFrames, const int& framesPerRow, const int& duration, SDL_Rect& source, bool& IsFixed);
 
         //Map
@@ -36,7 +35,6 @@ class MediaFiles
 
     private:
         int screenWidth;        
-        int LimitY;             //Limite para dibujar en el eje Y; en otras palabras, "El Suelo"
         std::pair<std::stack<int>,bool> lastFrames;
         Map Levels;
         SDL_Renderer* renderer;

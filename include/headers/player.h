@@ -29,15 +29,17 @@ class Player
                 void SetUpdateY(int value);
 
             //state for pj 
-                void SetJump(bool jump);
-                void SetState(int state);
-                void SetIsRight(bool isRight);
-                void SetIsFixed(bool isFixed);
+                void SetJump(bool value);
+                void SetLimitY(int value);
+                void SetState(int value);
+                void SetIsRight(bool value);
+                void SetIsFixed(bool value);
 
-                void SetHeal(int state);
-                void SetArmor(int state);
+                void SetHeal(int value);
+                void SetArmor(int value);
 
                 int GetState();
+                int GetLimitY();
                 bool GetIsRight();
                 bool GetJump();
                 bool* GetIsFixed();
@@ -65,6 +67,7 @@ class Player
 
         //Estados.
         int state;
+        int limitY;
         bool isRight;
         bool jump;
         bool isFixed;

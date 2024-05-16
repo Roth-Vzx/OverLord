@@ -50,6 +50,8 @@ class OverLord
         SDL_Texture* cloud_Light;
 
         Player mainPJ;
+        Player enemy;
+
         //Update 
         int move;
         

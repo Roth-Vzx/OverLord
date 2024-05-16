@@ -5,7 +5,6 @@
 
 MediaFiles::MediaFiles()
 { 
-    LimitY = 0;
     screenWidth = 0;
     lastFrames.second = false;
     renderer = nullptr;
@@ -16,10 +15,6 @@ MediaFiles::~MediaFiles(){};
 SDL_Renderer* MediaFiles::GetRenderer(){return renderer;}
 
 void MediaFiles::SetRenderer(SDL_Renderer* value){renderer = value;}
-
-void MediaFiles::SetLimitY(int value){LimitY = value;}
-
-int MediaFiles::GetLimitY(){return LimitY;}
 
 void MediaFiles::SetScreenWidth(int value){screenWidth = value;}
 
@@ -56,7 +51,7 @@ void MediaFiles::CopyFullTextures(std::vector<SDL_Texture*> textures)
     }
 }
 
-void MediaFiles::DrawPJ(SDL_Texture* PJtexture, SDL_Rect& source, SDL_Rect& destiny, int& state, const bool& IsRight, bool& IsJumping, bool& IsFixed)
+/*void MediaFiles::DrawPJ(SDL_Texture* PJtexture, SDL_Rect& source, SDL_Rect& destiny, int& state, const bool& IsRight, bool& IsJumping, bool& IsFixed)
 {
     if(IsJumping == true)
     {
@@ -102,7 +97,7 @@ void MediaFiles::DrawPJ(SDL_Texture* PJtexture, SDL_Rect& source, SDL_Rect& dest
     //Direccion.
     if (IsRight == true) SDL_RenderCopyEx(renderer, PJtexture, &source, &destiny, 0, NULL, SDL_FLIP_NONE);
     else SDL_RenderCopyEx(renderer, PJtexture, &source, &destiny, 0, NULL,SDL_FLIP_HORIZONTAL);
-}
+}*/
 
 void MediaFiles::DrawPJ(Player& PJ)
 {
@@ -113,12 +108,12 @@ void MediaFiles::DrawPJ(Player& PJ)
 
         PJ.SetSourceY(308); //jump
 
-        if(PJ.GetUpdateTexture()->y >= LimitY/2) PJ.SetUpdateY(PJ.GetUpdateTexture()->y - 6);
+        if(PJ.GetUpdateTexture()->y >= PJ.GetLimitY()/2) PJ.SetUpdateY(PJ.GetUpdateTexture()->y - 6);
         else PJ.SetJump(false);
     }
     else if(PJ.GetJump() == false)
     {
-        if(PJ.GetUpdateTexture()->y < LimitY)
+        if(PJ.GetUpdateTexture()->y < PJ.GetLimitY())
         {
             //Si el personaje acaba de saltar
             //Con este if se asegura que vuelva a bajar
@@ -149,6 +144,54 @@ void MediaFiles::DrawPJ(Player& PJ)
      
     //Direccion.
     if (PJ.GetIsRight() == true) SDL_RenderCopyEx(renderer, PJ.GetTexture(), PJ.GetSourceTexture(), PJ.GetUpdateTexture(), 0, NULL, SDL_FLIP_NONE);
+    else SDL_RenderCopyEx(renderer, PJ.GetTexture(), PJ.GetSourceTexture(), PJ.GetUpdateTexture(), 0, NULL,SDL_FLIP_HORIZONTAL);
+}
+
+void MediaFiles::DrawEnemy(Player& PJ)
+{
+    if(PJ.GetJump() == true)
+    {
+        //Si salta comenzara a subir hasta un cierto limite (LimitY/2)
+        //Cuando llegue a ese limite, jump sera falso
+
+        PJ.SetSourceY(308); //jump
+
+        if(PJ.GetUpdateTexture()->y >= PJ.GetLimitY()/2) PJ.SetUpdateY(PJ.GetUpdateTexture()->y - 6);
+        else PJ.SetJump(false);
+    }
+    else if(PJ.GetJump() == false)
+    {
+        if(PJ.GetUpdateTexture()->y < PJ.GetLimitY())
+        {
+            //Si el personaje acaba de saltar
+            //Con este if se asegura que vuelva a bajar
+
+            PJ.SetSourceY(351);  //jump
+            PJ.SetSourceX(0);
+            PJ.SetUpdateY((PJ.GetUpdateTexture())->y + 6);
+        }
+        else if(*PJ.GetIsFixed() == true) 
+        {
+            switch (PJ.GetState())
+            {
+                case 2:
+                    PJ.SetSourceY(PJ.GetSourceTexture()->h * 2);
+                    DoFixedAnimation(1,5,8,6,*(PJ.GetSourceTexture()),*(PJ.GetIsFixed()));
+                break;
+
+                case 3:
+                    PJ.SetSourceY(PJ.GetSourceTexture()->h * 2);
+                    DoFixedAnimation(1,9,8,3,*(PJ.GetSourceTexture()),*(PJ.GetIsFixed()));
+                break;
+            }
+            if(lastFrames.first.size() == 0 && PJ.GetState() > 1) PJ.SetState(1);
+        }
+        else if(PJ.GetState() == -1) PJ.SetSourceY(0); //static
+        else if(PJ.GetState() == 1) PJ.SetSourceY(PJ.GetSourceTexture()->h); //running
+    }
+     
+    //Direccion.
+    if (PJ.GetIsRight() == false) SDL_RenderCopyEx(renderer, PJ.GetTexture(), PJ.GetSourceTexture(), PJ.GetUpdateTexture(), 0, NULL, SDL_FLIP_NONE);
     else SDL_RenderCopyEx(renderer, PJ.GetTexture(), PJ.GetSourceTexture(), PJ.GetUpdateTexture(), 0, NULL,SDL_FLIP_HORIZONTAL);
 }
 

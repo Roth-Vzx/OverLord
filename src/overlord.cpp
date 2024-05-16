@@ -66,6 +66,19 @@ OverLord::OverLord()
     mainPJ.GetSourceTexture()->w = 69;
     mainPJ.GetSourceTexture()->h = 44;
 
+    mainPJ.SetLimitY(mainPJ.GetUpdateTexture()->y);
+
+    enemy.SetUpdateX(screenWidth/2 + screenWidth/6);
+    enemy.SetUpdateY(screenHeigth/2 + screenHeigth/10);
+    enemy.GetUpdateTexture()->w = 240;
+    enemy.GetUpdateTexture()->h = 240;
+
+    enemy.GetSourceTexture()->w = 140;
+    enemy.GetSourceTexture()->h = 93;
+
+    enemy.SetState(1);
+    enemy.SetLimitY(enemy.GetUpdateTexture()->y);
+
     location_Name.h = 300;
     location_Name.w = 890;
     location_Name.x = screenWidth/2 - screenWidth/3;
@@ -75,8 +88,6 @@ OverLord::OverLord()
     location_PressToStar.w = 800;
     location_PressToStar.x = screenWidth/2 - screenWidth/3.3;
     location_PressToStar.y = 400;
-
-    media.SetLimitY(mainPJ.GetUpdateTexture()->y);
 };
 
 OverLord::~OverLord(){};
@@ -113,6 +124,7 @@ void OverLord::Init(const char* name, const int& posX, const int& posY, const in
         pressToStar = media.CreateTexture("resources/img/PressToStar.png");
 
         mainPJ.SetTexture(media.CreateTexture("resources/img/character/warrior.png"));
+        enemy.SetTexture(media.CreateTexture("resources/img/character/Bringer-of-Death.png"));
 
         (*media.GetLevels()).SetTileset(media.CreateTexture("resources/img/map_tileset.png"));
 
@@ -168,6 +180,8 @@ void OverLord::HandleEvents()
 
             //Al presionar tecla en keyboard
             case SDL_KEYDOWN:
+            if(*mainPJ.GetIsFixed()) std::cout<<"Fixed True"<<std::endl;
+            else std::cout<<"Fixed False"<<std::endl;
                 if(*mainPJ.GetIsFixed() == false)
                 {
                     switch (event.key.keysym.sym){
@@ -184,7 +198,7 @@ void OverLord::HandleEvents()
                         break;
 
                         case SDLK_w:
-                            if(mainPJ.GetUpdateTexture()->y == media.GetLimitY()) //LimitY = Piso
+                            if(mainPJ.GetUpdateTexture()->y == mainPJ.GetLimitY()) //LimitY = Piso
                             {
                                 //Si salta, este evento no se volvera a leer hasta que:
                                 //deje de presionar el boton o hasta que suba a su altura maxima y bajar
@@ -219,7 +233,8 @@ void OverLord::HandleEvents()
             case SDL_KEYUP:
                 if(*mainPJ.GetIsFixed() == false)
                 {
-                    switch (event.key.keysym.sym){
+                    switch (event.key.keysym.sym)
+                    {
                         case SDLK_a:
                         case SDLK_d:
                             mainPJ.SetState(-1);
@@ -244,38 +259,96 @@ void OverLord::Update(){
         else if(mainPJ.GetIsRight() == false)
         {
             //izquierda.
-            if(mainPJ.GetJump() == true) move += 8;
+            if(mainPJ.GetJump() == true)
+            {
+                move += 8;
+                enemy.SetUpdateX(enemy.GetUpdateTexture()->x + 8);
+            } 
             else
             {
                 if(mainPJ.GetState() == 2) move += 5;
                 else if(mainPJ.GetState() == 3) move += 2;
-                else move += 8;
+                else 
+                {
+                    move += 8;
+                    enemy.SetUpdateX(enemy.GetUpdateTexture()->x + 8);
+                }
             }
             
         } 
         else if(mainPJ.GetIsRight() == true)
         {
             //derecha.
-            if(mainPJ.GetJump() == true) move -= 8;
+            if(mainPJ.GetJump() == true)
+            {
+                move -= 8;
+                enemy.SetUpdateX(enemy.GetUpdateTexture()->x - 8);
+            } 
             else
             {
                 if(mainPJ.GetState() == 2) move -= 5;
                 else if(mainPJ.GetState() == 3) move -= 2;
-                else move -= 8;
+                else
+                {
+                    enemy.SetUpdateX(enemy.GetUpdateTexture()->x - 8);
+                    move -= 8;
+                } 
+            }
+        }
+
+        if(mainPJ.GetIsRight() != enemy.GetIsRight()) enemy.SetIsRight(mainPJ.GetIsRight());
+
+        if(enemy.GetUpdateTexture()->x > mainPJ.GetUpdateTexture()->x && enemy.GetIsRight()) enemy.SetIsRight(false);
+        else if(enemy.GetUpdateTexture()->x < mainPJ.GetUpdateTexture()->x && !enemy.GetIsRight()) enemy.SetIsRight(true);
+
+        std::cout<<mainPJ.GetUpdateTexture()->x<<std::endl;
+        std::cout<<enemy.GetUpdateTexture()->x<<std::endl;
+
+        if(enemy.GetState() == -1); //estatico.
+        else if(enemy.GetIsRight() == false)
+        {
+            //izquierda.
+            if(enemy.GetJump() == true) enemy.SetUpdateX(enemy.GetUpdateTexture()->x - 6);
+            else
+            {
+                if(enemy.GetState() == 2) enemy.SetUpdateX(enemy.GetUpdateTexture()->x - 3);
+                else if(enemy.GetState() == 3) enemy.SetUpdateX(enemy.GetUpdateTexture()->x - 1);
+                else enemy.SetUpdateX(enemy.GetUpdateTexture()->x - 6);
             }
         } 
+        else if(enemy.GetIsRight() == true)
+        {
+            //derecha.
+            if(enemy.GetJump() == true) enemy.SetUpdateX(enemy.GetUpdateTexture()->x + 6);
+            else
+            {
+                if(enemy.GetState() == 2) enemy.SetUpdateX(enemy.GetUpdateTexture()->x + 3);
+                else if(enemy.GetState() == 3) enemy.SetUpdateX(enemy.GetUpdateTexture()->x + 1);
+                else enemy.SetUpdateX(enemy.GetUpdateTexture()->x + 6);
+            }
+        }
+
+        if(enemy.GetUpdateTexture()->x > mainPJ.GetUpdateTexture()->x - 50 && enemy.GetUpdateTexture()->x < mainPJ.GetUpdateTexture()->x + 50)
+        {
+            enemy.SetState((enemy.GetUpdateTexture()->x % 2)+2);
+            enemy.SetIsFixed(true);
+        } 
+
+        std::cout<<enemy.GetState()<<std::endl;
         
     //Animaciones. 
         //Player
         
         frameIndexPlayer = int(((SDL_GetTicks() / 100) % 12));
-        mainPJ.SetSourceX((frameIndexPlayer % 6) * mainPJ.GetSourceTexture()->w);     
+        mainPJ.SetSourceX((frameIndexPlayer % 6) * mainPJ.GetSourceTexture()->w);
+        enemy.SetSourceX((frameIndexPlayer % 8) * enemy.GetSourceTexture()->w); 
 }
 
 void OverLord::Render(){
     SDL_RenderClear(media.GetRenderer());
     BackgroundLoop();
     media.DrawMap();
+    media.DrawEnemy(enemy);
     media.DrawPJ(mainPJ);
     SDL_RenderPresent(media.GetRenderer());
 }

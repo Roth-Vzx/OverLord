@@ -22,9 +22,11 @@ Player::Player()
 
     //estados.
     frameIndexTexture = 0;
+    limitY = 0;
     state = -1;
     jump = false;
     isRight = true;
+    isFixed = false;
 
     //stats.
      heal = 0;
@@ -37,11 +39,13 @@ Player::~Player(){};
 //Setters y Getters
     //state for pj 
     void Player::SetState(int value){state = value;}
+    void Player::SetLimitY(int value){limitY = value;}
     void Player::SetIsRight(bool value){isRight = value;}
     void Player::SetJump(bool value){jump = value;}
     void Player::SetIsFixed(bool value){isFixed = value;}
 
     int Player::GetState(){return state;}
+    int Player::GetLimitY(){return limitY;}
     bool Player::GetIsRight(){return isRight;}
     bool Player::GetJump(){return jump;}
     bool* Player::GetIsFixed(){return &isFixed;}
