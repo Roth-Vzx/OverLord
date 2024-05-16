@@ -122,7 +122,7 @@ void MediaFiles::DrawPJ(Player& PJ)
             PJ.SetSourceX(0);
             PJ.SetUpdateY((PJ.GetUpdateTexture())->y + 6);
         }
-        else if(*PJ.GetIsFixed() == true) 
+        else if(*(PJ.GetIsFixed()) == true) 
         {
             switch (PJ.GetState())
             {
@@ -170,7 +170,7 @@ void MediaFiles::DrawEnemy(Player& PJ)
             PJ.SetSourceX(0);
             PJ.SetUpdateY((PJ.GetUpdateTexture())->y + 6);
         }
-        else if(*PJ.GetIsFixed() == true) 
+        else if(*(PJ.GetIsFixed()) == true) 
         {
             switch (PJ.GetState())
             {

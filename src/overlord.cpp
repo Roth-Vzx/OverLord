@@ -180,21 +180,17 @@ void OverLord::HandleEvents()
 
             //Al presionar tecla en keyboard
             case SDL_KEYDOWN:
-            if(*mainPJ.GetIsFixed()) std::cout<<"Fixed True"<<std::endl;
-            else std::cout<<"Fixed False"<<std::endl;
-                if(*mainPJ.GetIsFixed() == false)
+                if(*(mainPJ.GetIsFixed()) == false)
                 {
                     switch (event.key.keysym.sym){
                         case SDLK_a:
                             mainPJ.SetState(1); //running
                             mainPJ.SetIsRight(false); //Left
-                            std::cout << mainPJ.GetState() << std::endl << mainPJ.GetIsRight()<< std::endl;
                         break;
 
                         case SDLK_d:
                             mainPJ.SetState(1); //running
                             mainPJ.SetIsRight(true); //Right
-                            std::cout << mainPJ.GetState() << std::endl << mainPJ.GetIsRight()<< std::endl;
                         break;
 
                         case SDLK_w:
@@ -212,13 +208,13 @@ void OverLord::HandleEvents()
 
             //Al presionar tecla en Mouse
             case SDL_MOUSEBUTTONDOWN:
-                if(mainPJ.GetJump() == false && *mainPJ.GetIsFixed() == false)
+                if(mainPJ.GetJump() == false && *(mainPJ.GetIsFixed()) == false)
                 {
                     switch (event.button.button)
                     {
                         case SDL_BUTTON_LEFT:
                             mainPJ.SetState(2); //swing
-                            mainPJ.SetIsFixed(true); 
+                            mainPJ.SetIsFixed(true);
                         break;
 
                         case SDL_BUTTON_RIGHT:
@@ -231,7 +227,7 @@ void OverLord::HandleEvents()
             
             //Al soltar la tecla
             case SDL_KEYUP:
-                if(*mainPJ.GetIsFixed() == false)
+                if(*(mainPJ.GetIsFixed()) == false)
                 {
                     switch (event.key.keysym.sym)
                     {
@@ -295,14 +291,13 @@ void OverLord::Update(){
                 } 
             }
         }
-
+        
+    if(!(*(enemy.GetIsFixed())))
+    {
         if(mainPJ.GetIsRight() != enemy.GetIsRight()) enemy.SetIsRight(mainPJ.GetIsRight());
 
         if(enemy.GetUpdateTexture()->x > mainPJ.GetUpdateTexture()->x && enemy.GetIsRight()) enemy.SetIsRight(false);
         else if(enemy.GetUpdateTexture()->x < mainPJ.GetUpdateTexture()->x && !enemy.GetIsRight()) enemy.SetIsRight(true);
-
-        std::cout<<mainPJ.GetUpdateTexture()->x<<std::endl;
-        std::cout<<enemy.GetUpdateTexture()->x<<std::endl;
 
         if(enemy.GetState() == -1); //estatico.
         else if(enemy.GetIsRight() == false)
@@ -328,13 +323,14 @@ void OverLord::Update(){
             }
         }
 
+
+        std::cout<<"Danger"<<std::endl;
         if(enemy.GetUpdateTexture()->x > mainPJ.GetUpdateTexture()->x - 50 && enemy.GetUpdateTexture()->x < mainPJ.GetUpdateTexture()->x + 50)
         {
             enemy.SetState((enemy.GetUpdateTexture()->x % 2)+2);
             enemy.SetIsFixed(true);
-        } 
-
-        std::cout<<enemy.GetState()<<std::endl;
+        }
+    }
         
     //Animaciones. 
         //Player
