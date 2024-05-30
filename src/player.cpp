@@ -54,19 +54,15 @@ Player::~Player(){};
     void Player::SetTexture(SDL_Texture* value){Texture = value;}
 
     void Player::SetframeIndexTexture(int value){frameIndexTexture = value;}
-    void Player::SetSourceTexture(SDL_Rect value){sourceTextureRect = value;}
-    void Player::SetUpdateTexture(SDL_Rect value){updateTextureRect = value;}
+    void Player::SetSource(SDL_Rect value){sourceTextureRect = value;}
+    void Player::SetUpdate(SDL_Rect value){updateTextureRect = value;}
 
     SDL_Texture* Player::GetTexture(){return Texture;}
     int Player::GetframeIndexTexture(){return frameIndexTexture;}
-    SDL_Rect* Player::GetSourceTexture(){return &sourceTextureRect;}
-    SDL_Rect* Player::GetUpdateTexture(){return &updateTextureRect;}
+    SDL_Rect* Player::GetSource(){return &sourceTextureRect;}
+    SDL_Rect* Player::GetUpdate(){return &updateTextureRect;}
 
-    void Player::SetSourceX(int value){sourceTextureRect.x = value;}
-    void Player::SetSourceY(int value){sourceTextureRect.y = value;}
-
-    void Player::SetUpdateX(int value){updateTextureRect.x = value;}
-    void Player::SetUpdateY(int value){updateTextureRect.y = value;}
+    std::pair<std::stack<int>,bool>* Player::GetAnimationHelper(){return &fixedAnimation;}
 
 //Funciones
 //Acciones

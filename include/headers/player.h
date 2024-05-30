@@ -2,6 +2,7 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <stack>
 
 class Player
 {
@@ -14,19 +15,15 @@ class Player
             //Texturas
                 void SetTexture(SDL_Texture* value);
                 void SetframeIndexTexture(int frameIndex);
-                void SetSourceTexture(SDL_Rect sourceTexture);
-                void SetUpdateTexture(SDL_Rect updateTexture);
+                void SetSource(SDL_Rect sourceTexture);
+                void SetUpdate(SDL_Rect updateTexture);
 
                 SDL_Texture* GetTexture();
                 int GetframeIndexTexture();
-                SDL_Rect* GetSourceTexture();
-                SDL_Rect* GetUpdateTexture();
+                SDL_Rect* GetSource();
+                SDL_Rect* GetUpdate();
 
-                void SetSourceX(int value);
-                void SetSourceY(int value);
-
-                void SetUpdateX(int value);
-                void SetUpdateY(int value);
+                std::pair<std::stack<int>,bool>* GetAnimationHelper();
 
             //state for pj 
                 void SetJump(bool value);
@@ -60,6 +57,7 @@ class Player
         int frameIndexTexture;
         SDL_Texture* Texture;
         SDL_Rect sourceTextureRect, updateTextureRect;
+        std::pair<std::stack<int>,bool> fixedAnimation;
         
         //stats
         int heal;

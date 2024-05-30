@@ -2,6 +2,7 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <vector>
 
 class Map{
 
@@ -9,22 +10,29 @@ class Map{
         Map();
         ~Map();
 
-        void LoadMap(int arr[22][70]);
+        void LoadMap(int arr[24][64]);
 
-        void SetSourceX(int value);
-        void SetDestinyX(int value);
-        void SetSourceY(int value);
-        void SetDestinyY(int value);
-
-        SDL_Rect* GetSource();
-        SDL_Rect* GetDestiny();
+        SDL_Rect* GetSourceLand();
+        SDL_Rect* GetDestinyLand();
         SDL_Texture* GetTileset();
         void SetTileset(SDL_Texture* value);
 
+        SDL_Rect* GetDestinyBackground();
+        std::vector<SDL_Texture*>* GetBackground();
+
         int GetPosMap(const int& row, const int& column);
+        int GetNumHeigth();
+        int GetNumWidth();
 
     private:
-        SDL_Rect src, dest;
+        SDL_Rect srcLand;
+        SDL_Rect destLand;
         SDL_Texture* tileset; 
-        int map [22][70];
+
+        SDL_Rect destBackground;
+        std::vector<SDL_Texture*> background;
+
+        int map [24][64];
+        int numBlocksHeigth;
+        int numBlocksWidth;
 };

@@ -8,7 +8,7 @@ OverLord::OverLord()
     gameName = SDL_strdup("OverLord");
     gameState = true;
     frameIndexPlayer = 0;
-    move = 0;
+    movePlayer = 0;
 
     window = nullptr;
     sky = nullptr;
@@ -20,74 +20,29 @@ OverLord::OverLord()
     screenHeigth = 720;
     screenWidth = 1280;
 
-    destinationBackground.h = screenHeigth;
-    destinationBackground.w = screenWidth;
-    destinationBackground.y = 0;
+    media.SetScreenWidth(screenWidth);
+    media.SetScreenHeigth(screenHeigth);
 
-    destinationMirrorBackground.h = screenHeigth;
-    destinationMirrorBackground.w = screenWidth;
-    destinationMirrorBackground.y = 0;
+    mainPJ.GetSource()->w = 69;
+    mainPJ.GetSource()->h = 44;
 
-    motion_Sky.h = screenHeigth;
-    motion_Sky.w = screenWidth;
-    motion_Sky.x = 0;
-    motion_Sky.y = 0; 
+    mainPJ.GetUpdate()->w = 180;
+    mainPJ.GetUpdate()->h = 180;
+    mainPJ.GetUpdate()->x = screenWidth/2 - screenWidth/25;
+    mainPJ.GetUpdate()->y = screenHeigth - mainPJ.GetUpdate()->h - media.GetLevels()->GetDestinyLand()->h;
 
-    motionMirror_sky.h = screenHeigth;
-    motionMirror_sky.w = screenWidth;
-    motionMirror_sky.x = -screenWidth;
-    motionMirror_sky.y = 0;
+    mainPJ.SetLimitY(mainPJ.GetUpdate()->y);
 
-    motion_CL.h = screenHeigth;
-    motion_CL.w = screenWidth;
-    motion_CL.x = 0;
-    motion_CL.y = 0; 
+    enemy.GetUpdate()->w = 240;
+    enemy.GetUpdate()->h = 240;
+    enemy.GetUpdate()->x = screenWidth/2 + screenWidth/6;
+    enemy.GetUpdate()->y = screenHeigth - enemy.GetUpdate()->h - media.GetLevels()->GetDestinyLand()->h;
 
-    motionMirror_CL.h = screenHeigth;
-    motionMirror_CL.w = screenWidth;
-    motionMirror_CL.x = -screenWidth;
-    motionMirror_CL.y = 0;
-
-    motion_CD.h = screenHeigth;
-    motion_CD.w = screenWidth;
-    motion_CD.x = 0;
-    motion_CD.y = 0; 
-
-    motionMirror_CD.h = screenHeigth;
-    motionMirror_CD.w = screenWidth;
-    motionMirror_CD.x = screenWidth;
-    motionMirror_CD.y = 0;
-
-    mainPJ.SetUpdateX(screenWidth/2 - screenWidth/25);
-    mainPJ.SetUpdateY(screenHeigth/2 + screenHeigth/5);
-    mainPJ.GetUpdateTexture()->w = 180;
-    mainPJ.GetUpdateTexture()->h = 180;
-
-    mainPJ.GetSourceTexture()->w = 69;
-    mainPJ.GetSourceTexture()->h = 44;
-
-    mainPJ.SetLimitY(mainPJ.GetUpdateTexture()->y);
-
-    enemy.SetUpdateX(screenWidth/2 + screenWidth/6);
-    enemy.SetUpdateY(screenHeigth/2 + screenHeigth/10);
-    enemy.GetUpdateTexture()->w = 240;
-    enemy.GetUpdateTexture()->h = 240;
-
-    enemy.GetSourceTexture()->w = 140;
-    enemy.GetSourceTexture()->h = 93;
+    enemy.GetSource()->w = 140;
+    enemy.GetSource()->h = 93;
 
     enemy.SetState(1);
-    enemy.SetLimitY(enemy.GetUpdateTexture()->y);
-
-    location_Name.h = 300;
-    location_Name.w = 890;
-    location_Name.x = screenWidth/2 - screenWidth/3;
-    location_Name.y = 60;
-
-    location_PressToStar.h = 160;
-    location_PressToStar.w = 800;
-    location_PressToStar.x = screenWidth/2 - screenWidth/3.3;
-    location_PressToStar.y = 400;
+    enemy.SetLimitY(enemy.GetUpdate()->y);
 };
 
 OverLord::~OverLord(){};
@@ -125,13 +80,13 @@ void OverLord::Init(const char* name, const int& posX, const int& posY, const in
 
         mainPJ.SetTexture(media.CreateTexture("resources/img/character/warrior.png"));
         enemy.SetTexture(media.CreateTexture("resources/img/character/Bringer-of-Death.png"));
-
+   
         (*media.GetLevels()).SetTileset(media.CreateTexture("resources/img/map_tileset.png"));
 
         std::vector<char*> paths;
-        paths.push_back(SDL_strdup("resources/img/background_layer_1.bmp"));
-        paths.push_back(SDL_strdup("resources/img/background_layer_3.bmp"));
-        media.LoadTextures(paths,mainBackground);
+        paths.push_back(SDL_strdup("resources/img/background_layer_1.png"));
+        paths.push_back(SDL_strdup("resources/img/background_layer_3.png"));
+        media.SetBackground(paths);
 
         std::cout<<"FINISH INIT"<<std::endl;
     }
@@ -141,8 +96,13 @@ void OverLord::Init(const char* name, const int& posX, const int& posY, const in
         gameState = false;
         Close();
     }
+}
 
-   
+void OverLord::GenerateDelay(const double& start, const int& msPerframe)
+{
+    double end = SDL_GetTicks();
+    auto delay = start + msPerframe - end;
+    if(delay > 0) SDL_Delay(delay);
 }
 
 void OverLord::GameLoop()
@@ -151,17 +111,19 @@ void OverLord::GameLoop()
     while(true)
     {
         double start = SDL_GetTicks();
-
-        HandleEvents(); if(gameState==false) break;
-        Update();
-        Render();
-
-        const int msPerframe = 16;
-        double end = SDL_GetTicks();
-        auto delay = start + msPerframe - end;
-        if(delay > 0) SDL_Delay(delay);
+        HandleEvents();
+        if(gameState==false)
+        {
+            Close();
+            break;
+        }
+        else
+        {
+            Update();
+            Render();
+            GenerateDelay(start,16);
+        }
     } 
-    
     std::cout<<"BREAK GAMELOOP"<<std::endl;
 }
 
@@ -194,7 +156,7 @@ void OverLord::HandleEvents()
                         break;
 
                         case SDLK_w:
-                            if(mainPJ.GetUpdateTexture()->y == mainPJ.GetLimitY()) //LimitY = Piso
+                            if(mainPJ.GetUpdate()->y == mainPJ.GetLimitY()) //LimitY = Piso
                             {
                                 //Si salta, este evento no se volvera a leer hasta que:
                                 //deje de presionar el boton o hasta que suba a su altura maxima y bajar
@@ -257,77 +219,91 @@ void OverLord::Update(){
             //izquierda.
             if(mainPJ.GetJump() == true)
             {
-                move += 8;
-                enemy.SetUpdateX(enemy.GetUpdateTexture()->x + 8);
+                movePlayer += 8;
+                enemy.GetUpdate()->x += 8;
             } 
             else
             {
-                if(mainPJ.GetState() == 2) move += 5;
-                else if(mainPJ.GetState() == 3) move += 2;
+                if(mainPJ.GetState() == 2) 
+                {
+                    movePlayer += 5;
+                    enemy.GetUpdate()->x += 5;
+                }
+                else if(mainPJ.GetState() == 3)
+                {
+                    movePlayer += 2;
+                    enemy.GetUpdate()->x += 2;
+                } 
                 else 
                 {
-                    move += 8;
-                    enemy.SetUpdateX(enemy.GetUpdateTexture()->x + 8);
+                    movePlayer += 8;
+                    enemy.GetUpdate()->x += 8;
                 }
-            }
-            
+            }  
         } 
         else if(mainPJ.GetIsRight() == true)
         {
             //derecha.
             if(mainPJ.GetJump() == true)
             {
-                move -= 8;
-                enemy.SetUpdateX(enemy.GetUpdateTexture()->x - 8);
+                movePlayer -= 8;
+                enemy.GetUpdate()->x -= 8;
             } 
             else
             {
-                if(mainPJ.GetState() == 2) move -= 5;
-                else if(mainPJ.GetState() == 3) move -= 2;
+                if(mainPJ.GetState() == 2)
+                {
+                    movePlayer -= 5;
+                    enemy.GetUpdate()->x -= 5;
+                } 
+                else if(mainPJ.GetState() == 3)
+                {
+                    movePlayer -= 2;
+                    enemy.GetUpdate()->x -= 2;
+                } 
                 else
                 {
-                    enemy.SetUpdateX(enemy.GetUpdateTexture()->x - 8);
-                    move -= 8;
+                    enemy.GetUpdate()->x -= 8;
+                    movePlayer -= 8;
                 } 
             }
-        }
+        }  
         
     if(!(*(enemy.GetIsFixed())))
     {
         if(mainPJ.GetIsRight() != enemy.GetIsRight()) enemy.SetIsRight(mainPJ.GetIsRight());
 
-        if(enemy.GetUpdateTexture()->x > mainPJ.GetUpdateTexture()->x && enemy.GetIsRight()) enemy.SetIsRight(false);
-        else if(enemy.GetUpdateTexture()->x < mainPJ.GetUpdateTexture()->x && !enemy.GetIsRight()) enemy.SetIsRight(true);
+        if(enemy.GetUpdate()->x > mainPJ.GetUpdate()->x && enemy.GetIsRight()) enemy.SetIsRight(false);
+        else if(enemy.GetUpdate()->x < mainPJ.GetUpdate()->x && !enemy.GetIsRight()) enemy.SetIsRight(true);
 
         if(enemy.GetState() == -1); //estatico.
         else if(enemy.GetIsRight() == false)
         {
             //izquierda.
-            if(enemy.GetJump() == true) enemy.SetUpdateX(enemy.GetUpdateTexture()->x - 6);
+            if(enemy.GetJump() == true) enemy.GetUpdate()->x -= 6;
             else
             {
-                if(enemy.GetState() == 2) enemy.SetUpdateX(enemy.GetUpdateTexture()->x - 3);
-                else if(enemy.GetState() == 3) enemy.SetUpdateX(enemy.GetUpdateTexture()->x - 1);
-                else enemy.SetUpdateX(enemy.GetUpdateTexture()->x - 6);
+                if(enemy.GetState() == 2) enemy.GetUpdate()->x -= 3;
+                else if(enemy.GetState() == 3) enemy.GetUpdate()->x -= 1;
+                else enemy.GetUpdate()->x -= 6;
             }
         } 
         else if(enemy.GetIsRight() == true)
         {
             //derecha.
-            if(enemy.GetJump() == true) enemy.SetUpdateX(enemy.GetUpdateTexture()->x + 6);
+            if(enemy.GetJump() == true) enemy.GetUpdate()->x += 6;
             else
             {
-                if(enemy.GetState() == 2) enemy.SetUpdateX(enemy.GetUpdateTexture()->x + 3);
-                else if(enemy.GetState() == 3) enemy.SetUpdateX(enemy.GetUpdateTexture()->x + 1);
-                else enemy.SetUpdateX(enemy.GetUpdateTexture()->x + 6);
+                if(enemy.GetState() == 2) enemy.GetUpdate()->x += 3;
+                else if(enemy.GetState() == 3) enemy.GetUpdate()->x += 1;
+                else enemy.GetUpdate()->x += 6;
             }
         }
 
-
-        std::cout<<"Danger"<<std::endl;
-        if(enemy.GetUpdateTexture()->x > mainPJ.GetUpdateTexture()->x - 50 && enemy.GetUpdateTexture()->x < mainPJ.GetUpdateTexture()->x + 50)
+        //std::cout<<"Danger"<<std::endl;
+        if(enemy.GetUpdate()->x > mainPJ.GetUpdate()->x - 50 && enemy.GetUpdate()->x < mainPJ.GetUpdate()->x + 50)
         {
-            enemy.SetState((enemy.GetUpdateTexture()->x % 2)+2);
+            enemy.SetState((enemy.GetUpdate()->x % 2)+2);
             enemy.SetIsFixed(true);
         }
     }
@@ -335,106 +311,93 @@ void OverLord::Update(){
     //Animaciones. 
         //Player
         
-        frameIndexPlayer = int(((SDL_GetTicks() / 100) % 12));
-        mainPJ.SetSourceX((frameIndexPlayer % 6) * mainPJ.GetSourceTexture()->w);
-        enemy.SetSourceX((frameIndexPlayer % 8) * enemy.GetSourceTexture()->w); 
+    frameIndexPlayer = int(((SDL_GetTicks() / 100) % 12));
+    mainPJ.GetSource()->x = (frameIndexPlayer % 6) * mainPJ.GetSource()->w;
+    enemy.GetSource()->x = (frameIndexPlayer % 8) * enemy.GetSource()->w;
 }
 
 void OverLord::Render(){
     SDL_RenderClear(media.GetRenderer());
-    BackgroundLoop();
-    media.DrawMap();
-    media.DrawEnemy(enemy);
-    media.DrawPJ(mainPJ);
+    media.DrawLevel(mainPJ, enemy, movePlayer);
     SDL_RenderPresent(media.GetRenderer());
-}
-
-void OverLord::BackgroundLoop()
-{
-    destinationBackground.x = move;
-
-    if(move<0) //PJ hacia la derecha
-    {
-        destinationMirrorBackground.x = screenWidth+move;
-    }
-    else if(move>0) //PJ hacia la izquierda
-    {
-        destinationMirrorBackground.x = -screenWidth+move;
-    }
-
-    if(move >= screenWidth || move <= -screenWidth) move = 0;
-
-    for(SDL_Texture* texture : mainBackground)
-    {
-        SDL_RenderCopy(media.GetRenderer(), texture, NULL, &destinationBackground);
-        SDL_RenderCopy(media.GetRenderer(), texture, NULL, &destinationMirrorBackground);
-    }
 }
 
 void OverLord::MenuInit(){
 
-    //firts and Second Frame of Background
+    SDL_Rect destSky, destCloudsL, destCloudsD;
+    SDL_Rect destName, destPressToStart;
+
+    destSky.h = destCloudsL.h = destCloudsD.h = screenHeigth; // Para ocupar Alto de la Pantalla
+
+    destSky.w = destCloudsL.w = destCloudsD.w = screenWidth; // Para ocupar Ancho de la Pantalla
+
+    destSky.x = destSky.y = destCloudsL.x = destCloudsL.y = destCloudsD.x = destCloudsD.y = 0; // Posicion (0,0)
+
+    //Posicion Letras
+
+    destName.h = 300;
+    destName.w = 890;
+    destName.x = screenWidth/2 - screenWidth/3;
+    destName.y = 60;
+
+    destPressToStart.h = 160;
+    destPressToStart.w = 800;
+    destPressToStart.x = screenWidth/2 - screenWidth/3.3;
+    destPressToStart.y = 400;
 
     SDL_Event event;
     bool wait = true;
     while (wait == true)
     {
-        SDL_RenderCopy(media.GetRenderer(), sky, NULL, &motion_Sky);
-        SDL_RenderCopy(media.GetRenderer(), sky, NULL, &motionMirror_sky);
-        SDL_RenderCopy(media.GetRenderer(), cloud_Light, NULL, &motion_CL);
-        SDL_RenderCopy(media.GetRenderer(), cloud_Light, NULL, &motionMirror_CL);
-        SDL_RenderCopy(media.GetRenderer(), cloud_Dark, NULL, &motion_CD);
-        SDL_RenderCopy(media.GetRenderer(), cloud_Dark, NULL, &motionMirror_CD);
-        SDL_RenderCopy(media.GetRenderer(), name_Init, NULL, &location_Name);
-        SDL_RenderCopy(media.GetRenderer(), pressToStar, NULL, &location_PressToStar);
+        double start = SDL_GetTicks();
+
+        media.DrawDoubleFrame(sky, destSky, -1);
+        media.DrawDoubleFrame(cloud_Light, destCloudsL, 1);
+        media.DrawDoubleFrame(cloud_Dark, destCloudsD, -2);
+
+        SDL_RenderCopy(media.GetRenderer(), name_Init, NULL, &destName);
+        SDL_RenderCopy(media.GetRenderer(), pressToStar, NULL, &destPressToStart);
+
         SDL_RenderPresent(media.GetRenderer());
 
-        double start = SDL_GetTicks();
-        const int msPerframe = 28;
-        double end = SDL_GetTicks();
-        auto delay = start + msPerframe - end;
-        if(delay > 0) SDL_Delay(delay);
-
-        motion_Sky.x -= 1;
-        motionMirror_sky.x -= 1;
+        GenerateDelay(start,24);
         
-        motion_CL.x += 1;
-        motionMirror_CL.x += 1;
-        
-        motion_CD.x -= 2;
-        motionMirror_CD.x -= 2;
-
-        if (motionMirror_sky.x <= -screenWidth) motionMirror_sky.x *= -1;
-        else if (motion_Sky.x <= -screenWidth) motion_Sky.x *= -1;
-
-        if (motionMirror_CL.x >= screenWidth) motionMirror_CL.x *= -1;
-        else if (motion_CL.x >= screenWidth) motion_CL.x *= -1;
-
-        if (motionMirror_CD.x <= -screenWidth) motionMirror_CD.x *= -1;
-        else if (motion_CD.x <= -screenWidth) motion_CD.x *= -1;
-
-
         SDL_PollEvent(&event);
         switch (event.type)
         {
             case SDL_KEYUP:
             case SDL_MOUSEBUTTONUP:
-
-                SDL_RenderClear(media.GetRenderer());
-                media.CopyFullTextures(mainBackground);
-                SDL_RenderPresent(media.GetRenderer());  
-
                 wait = false;
-                break;
-        
+                break;    
             case SDL_QUIT:
                 wait = false;
                 gameState = false;
-                Close();
                 break;
         } 
     }
-    ///////////////////////////
+    DestroyTexture(sky);
+    DestroyTexture(cloud_Light);
+    DestroyTexture(cloud_Dark);
+    DestroyTexture(name_Init);
+    DestroyTexture(pressToStar);  
+}
+
+void OverLord::DestroyTexture(SDL_Texture*& texture)
+{
+    try
+    {
+        if(texture == nullptr) std::cout<<"Anything to Destroy"<<std::endl;
+        else 
+        {
+            texture = nullptr;
+            SDL_DestroyTexture(texture);
+            std::cout<<"Destroy Texture"<<std::endl;
+        }
+    }
+    catch(const SDL_Exception& exception)
+    {
+        std::cout<<"An Error has ocurred: "<<exception.message<<std::endl;
+    }
 }
 
 void OverLord::Close()
@@ -448,50 +411,16 @@ void OverLord::Close()
         std::cout<<"Destroy PJ"<<std::endl;
     }
 
-    if(name_Init != nullptr)
+    while(!(*media.GetLevels()->GetBackground()).empty())
     {
-        name_Init = nullptr;
-        SDL_DestroyTexture(name_Init);
-        std::cout<<"Destroy name_Init"<<std::endl;
-    }
-
-    if(pressToStar != nullptr)
-    {
-        pressToStar = nullptr;
-        SDL_DestroyTexture(pressToStar);
-        std::cout<<"Destroy name_Init"<<std::endl;
-    }
-
-    if(sky != nullptr)
-    {
-        sky = nullptr;
-        SDL_DestroyTexture(sky);
-        std::cout<<"Destroy sky"<<std::endl;
-    }
-
-    if(cloud_Dark != nullptr)
-    {
-        cloud_Dark = nullptr;
-        SDL_DestroyTexture(cloud_Dark);
-        std::cout<<"Destroy cloud_Dark"<<std::endl;
-    }
-
-    if(cloud_Light != nullptr)
-    {
-        cloud_Light = nullptr;
-        SDL_DestroyTexture(cloud_Light);
-        std::cout<<"Destroy cloud_Light"<<std::endl;
-    }
-
-    while(!mainBackground.empty())
-    {
-        for(auto iterator = mainBackground.rbegin(); iterator != mainBackground.rend(); ++iterator)
+        for(auto iterator = (*media.GetLevels()->GetBackground()).rbegin(); iterator != (*media.GetLevels()->GetBackground()).rend(); ++iterator)
         {
             *iterator = nullptr;
             SDL_DestroyTexture(*iterator);
-            mainBackground.pop_back();
+            (*media.GetLevels()->GetBackground()).pop_back();
+            std::cout<<"Destroy Main Background"<<std::endl;
         }
-        std::cout<<"Destroy Main Background"<<std::endl;
+        std::cout<<"Destroy Main Background Confirm"<<std::endl;
     }
 
     if(media.GetRenderer() != nullptr)

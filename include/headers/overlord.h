@@ -15,8 +15,6 @@ class OverLord
 
         //Funciones Publicas
         void Run();
-
-        //static SDL_Renderer* renderer; //renderizador
         
     private:
         //Atributos
@@ -26,21 +24,6 @@ class OverLord
         int screenHeigth;
         SDL_Window* window;
         MediaFiles media;
-        
-        //Fondo In Game
-        SDL_Rect destinationBackground;
-        SDL_Rect destinationMirrorBackground;
-        std::vector<SDL_Texture*> mainBackground;
-
-        //Fondo Inicial
-        SDL_Rect motion_Sky;
-        SDL_Rect motionMirror_sky;
-        SDL_Rect motion_CL;
-        SDL_Rect motion_CD;
-        SDL_Rect motionMirror_CL;
-        SDL_Rect motionMirror_CD;
-        SDL_Rect location_Name;
-        SDL_Rect location_PressToStar;
         
         //SDL_Texture* background_init;
         SDL_Texture* name_Init;
@@ -53,7 +36,7 @@ class OverLord
         Player enemy;
 
         //Update 
-        int move;
+        int movePlayer;
         
         //Render
         //Animacion del personaje.
@@ -66,6 +49,7 @@ class OverLord
         void HandleEvents();
         void Update();
         void Render();
+        void DestroyTexture(SDL_Texture*& texture);
         void Close();
-        void BackgroundLoop();
+        void GenerateDelay(const double& start, const int& msPerframe);
 };
